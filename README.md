@@ -1,6 +1,6 @@
 # bspwm rice
 
-An Arch Linux bspwm rice with two sidebar profiles, shared color palettes, and
+An Arch Linux bspwm with two sidebar profiles, shared color palettes, and
 an application security workflow. Built with sxhkd, picom, rofi, Kitty, Zsh,
 Neovim, and optional SDDM integration.
 
