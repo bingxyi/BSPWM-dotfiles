@@ -1,0 +1,36 @@
+-- Ponte entre o theme.sh e o neovim.
+-- O theme.sh escreve lua/offsec-theme.lua e dispara :OffsecReloadTheme
+-- nas instâncias abertas (via --remote-send).
+
+local M = {}
+
+local function read_theme()
+  package.loaded["offsec-theme"] = nil
+  local ok, theme = pcall(require, "offsec-theme")
+  if ok and type(theme) == "table" and theme.scheme then
+    return theme
+  end
+  return { name = "catppuccin-mocha", scheme = "catppuccin-mocha" }
+end
+
+function M.apply()
+  local theme = read_theme()
+  local ok = pcall(vim.cmd.colorscheme, theme.scheme)
+  if not ok then
+    pcall(vim.cmd.colorscheme, "habamax")
+    vim.notify("tema '" .. theme.scheme .. "' indisponível; usando habamax", vim.log.levels.WARN)
+  end
+  vim.g.offsec_theme = theme.name
+end
+
+function M.setup()
+  M.apply()
+  vim.api.nvim_create_user_command("OffsecReloadTheme", function()
+    M.apply()
+    pcall(function()
+      require("lualine").refresh()
+    end)
+  end, { desc = "Recarrega o tema escrito pelo theme.sh" })
+end
+
+return M

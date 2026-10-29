@@ -1,0 +1,70 @@
+/* offsec-dotfiles :: menus compactos (dmenu) */
+
+* {
+    background-color: transparent;
+    text-color:       @fg;
+    font:             "JetBrainsMono Nerd Font 11";
+}
+
+window {
+    transparency:     "real";
+    location:         center;
+    width:            36%;
+    border-radius:    16px;
+    border:           2px;
+    border-color:     @accent;
+    background-color: @bg;
+}
+
+mainbox {
+    padding:  18px;
+    spacing:  14px;
+    children: [ inputbar, message, listview ];
+}
+
+inputbar {
+    background-color: @bg-alt;
+    border-radius:    12px;
+    padding:          10px 14px;
+    spacing:          10px;
+    children:         [ prompt, entry ];
+}
+
+prompt { text-color: @accent; vertical-align: 0.5; }
+entry  { placeholder: "…"; placeholder-color: @muted; vertical-align: 0.5; }
+
+message {
+    background-color: @bg-alt;
+    border-radius:    10px;
+    padding:          8px 12px;
+}
+
+textbox { text-color: @fg-dim; }
+
+listview {
+    lines:     8;
+    spacing:   4px;
+    scrollbar: false;
+    dynamic:   true;
+    cycle:     true;
+}
+
+element {
+    padding:       9px 12px;
+    spacing:       12px;
+    border-radius: 10px;
+    cursor:        pointer;
+}
+
+element normal.normal { text-color: @fg-dim; }
+element selected.normal {
+    background-color: @accent;
+    text-color:       @bg;
+}
+element-icon { size: 20px; vertical-align: 0.5; }
+element-text { vertical-align: 0.5; highlight: @hl-accent-alt; }
+element selected.normal element-text { text-color: @bg; highlight: @hl-bg; }
+
+/* paleta por ultimo: no rofi 2.0 as variaveis do arquivo importado
+   so resolvem se o @import vier depois de quem as usa. */
+@import "../colors.rasi"

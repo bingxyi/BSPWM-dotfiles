@@ -1,0 +1,428 @@
+// offsec-dotfiles :: perfil Vesper
+// As cores vêm de colors.scss, gerado por theme.sh a cada troca de tema.
+@import "colors.scss";
+
+* {
+  all: unset;
+  font-family: "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
+  font-size: 13px;
+}
+
+tooltip {
+  background-color: $bg-alt;
+  color: $fg;
+  border: 1px solid $surface;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+/* ------------------------------------------------------------------ barra */
+.bar {
+  background-color: transparentize($bg-alt, 0.06);
+  border-right: 1px solid $surface;
+  padding: 10px 4px;
+}
+
+.block {
+  padding: 2px 0;
+}
+
+.icon-btn {
+  font-size: 16px;
+  color: $fg-dim;
+  padding: 7px 0;
+  margin: 1px 3px;
+  border-radius: 10px;
+  transition: background-color 180ms ease, color 180ms ease;
+
+  &:hover {
+    background-color: $surface;
+    color: $fg;
+  }
+
+  &.accent { color: $accent; }
+  &.green  { color: $green; }
+  &.red    { color: $red; }
+  &.yellow { color: $yellow; }
+  &.dim    { color: $muted; }
+}
+
+/* ------------------------------------------------------------ workspaces */
+.ws-box {
+  background-color: transparentize($surface, 0.55);
+  border-radius: 12px;
+  padding: 6px 2px;
+  margin: 4px 2px;
+}
+
+.ws {
+  font-size: 15px;
+  color: $muted;
+  padding: 6px 0;
+  margin: 1px 3px;
+  border-radius: 9px;
+  transition: all 200ms ease;
+
+  &:hover { background-color: $overlay; color: $fg; }
+
+  &.occupied { color: $fg-dim; }
+
+  &.urgent {
+    color: $urgent;
+    background-color: transparentize($urgent, 0.8);
+  }
+
+  &.focused {
+    color: $bg;
+    background-color: $accent;
+    box-shadow: 0 0 10px transparentize($accent, 0.5);
+  }
+}
+
+// --------------------------------------------------------------- métricas
+.metric {
+  margin: 1px 0;
+}
+
+.metric-icon {
+  font-size: 11px;
+  color: $muted;
+}
+
+.metric-value {
+  font-size: 10px;
+  color: $fg-dim;
+}
+
+// ---------------------------------------------------------------- relógio
+.clock-btn {
+  padding: 6px 0;
+  margin: 2px 3px;
+  border-radius: 10px;
+  transition: background-color 180ms ease;
+
+  &:hover { background-color: $surface; }
+}
+
+.clock-hour {
+  font-size: 14px;
+  font-weight: bold;
+  color: $accent;
+}
+
+.clock-min {
+  font-size: 13px;
+  color: $fg-dim;
+}
+
+// =====================================================================
+// CENTRAL DE CONTROLE — quick settings à direita
+// Linguagem visual: superfícies arredondadas, um único tom de destaque
+// para "ligado", tipografia com pesos bem separados. Tudo em variáveis do
+// colors.scss, então a central troca de cor junto com o tema.
+// =====================================================================
+
+.cc-root {
+  background-color: transparent;
+}
+
+.cc-panel {
+  background-color: transparentize($bg-alt, 0.04);
+  border: 1px solid $surface;
+  border-radius: 26px;
+  padding: 22px;
+  margin: 10px 12px 10px 0;
+
+  // Desliza para fora pela direita e some. A margem esquerda e' o que
+  // empurra o painel; a opacidade evita o corte seco no fim do percurso.
+  transition: margin 240ms cubic-bezier(0.32, 0.72, 0, 1),
+              opacity 200ms ease-out;
+
+  &.is-closed {
+    margin-left: 460px;
+    margin-right: -448px;
+    opacity: 0;
+  }
+
+  &.is-open {
+    margin-left: 0;
+    opacity: 1;
+  }
+}
+
+// ------------------------------------------------------------ cabeçalho
+.cc-header {
+  padding: 2px 4px 6px 4px;
+}
+
+.cc-clock {
+  font-size: 34px;
+  font-weight: 300;
+  color: $fg;
+}
+
+.cc-date {
+  font-size: 12px;
+  color: $fg-dim;
+  margin-top: 2px;
+}
+
+.cc-mini {
+  font-size: 14px;
+  color: $fg-dim;
+  background-color: transparentize($surface, 0.35);
+  border-radius: 999px;
+  padding: 8px 10px;
+  margin-left: 2px;
+  transition: background-color 160ms ease, color 160ms ease;
+
+  &:hover {
+    background-color: $surface;
+    color: $fg;
+  }
+
+  &.danger:hover {
+    background-color: $red;
+    color: $bg;
+  }
+}
+
+/* --------------------------------------------------------- grade de tiles */
+.qs-grid {
+  margin-top: 2px;
+}
+
+.qs-tile {
+  border-radius: 20px;
+  padding: 13px 14px;
+  transition: background-color 200ms ease, color 200ms ease;
+
+  &.off {
+    background-color: transparentize($surface, 0.42);
+    color: $fg-dim;
+
+    &:hover { background-color: transparentize($surface, 0.15); }
+  }
+
+  // Ligado = preenchido com a cor de destaque. É o único indicador de
+// estado do cartão, então tem de ser inconfundível a um relance.
+  &.on {
+    background-color: $accent;
+    color: $bg;
+
+    &:hover { background-color: $accent-alt; }
+
+    .qs-title { color: $bg; }
+    .qs-sub   { color: transparentize($bg, 0.2); }
+    .qs-icon  { color: $bg; }
+  }
+}
+
+.qs-icon {
+  font-size: 19px;
+  color: $accent;
+  min-width: 26px;
+}
+
+.qs-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: $fg;
+}
+
+.qs-sub {
+  font-size: 10.5px;
+  color: $muted;
+  margin-top: 1px;
+}
+
+// ---------------------------------------------------------------- seções
+.cc-section {
+  background-color: transparentize($surface, 0.55);
+  border-radius: 20px;
+  padding: 14px 16px;
+}
+
+.cc-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: $muted;
+  margin-bottom: 2px;
+}
+
+.cc-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: $bg;
+  background-color: $accent;
+  border-radius: 999px;
+  padding: 1px 8px;
+  margin-right: 6px;
+}
+
+.cc-chip {
+  font-size: 11.5px;
+  color: $fg-dim;
+  background-color: transparentize($overlay, 0.4);
+  border-radius: 999px;
+  padding: 8px 12px;
+  transition: background-color 160ms ease, color 160ms ease;
+
+  &:hover {
+    background-color: $accent;
+    color: $bg;
+  }
+}
+
+.cc-kv {
+  padding: 2px 0;
+}
+
+.cc-kv-icon {
+  font-size: 13px;
+  color: $accent;
+  min-width: 20px;
+}
+
+.cc-kv-text {
+  font-size: 12px;
+  color: $fg-dim;
+}
+
+/* --------------------------------------------------------------- volume */
+.cc-slider-icon {
+  font-size: 17px;
+  color: $accent;
+  padding: 2px 4px;
+
+  &:hover { color: $fg; }
+}
+
+.cc-slider-value {
+  font-size: 11.5px;
+  color: $fg-dim;
+  min-width: 38px;
+}
+
+.cc-scale trough {
+  background-color: transparentize($overlay, 0.3);
+  border-radius: 999px;
+  min-height: 8px;
+}
+
+.cc-scale highlight {
+  background-color: $accent;
+  border-radius: 999px;
+  min-height: 8px;
+}
+
+.cc-scale slider {
+  background-color: $fg;
+  border-radius: 999px;
+  min-height: 16px;
+  min-width: 16px;
+  margin: -5px;
+}
+
+// ------------------------------------------------------------ calendário
+.cc-calendar {
+  color: $fg-dim;
+  padding: 4px;
+
+  &:selected {
+    background-color: $accent;
+    color: $bg;
+    border-radius: 8px;
+  }
+
+  &.header { color: $fg; font-weight: 600; }
+  &.button { color: $accent; }
+}
+
+// --------------------------------------------------------- notificações
+.notif-section {
+  min-height: 120px;
+}
+
+.cc-body {
+  min-height: 200px;
+}
+
+.notif {
+  background-color: transparentize($bg, 0.25);
+  border-left: 3px solid $surface;
+  border-radius: 14px;
+  padding: 10px 12px;
+
+  &.critical { border-left-color: $red; }
+  &.normal   { border-left-color: $accent; }
+  &.low      { border-left-color: $muted; }
+}
+
+.notif-app {
+  font-size: 10px;
+  font-weight: 700;
+  color: $accent;
+}
+
+.notif-time {
+  font-size: 10px;
+  color: $muted;
+}
+
+.notif-summary {
+  font-size: 12px;
+  font-weight: 600;
+  color: $fg;
+  margin-top: 2px;
+}
+
+.notif-body {
+  font-size: 11px;
+  color: $fg-dim;
+}
+
+.notif-empty {
+  color: $muted;
+  font-size: 11.5px;
+  padding: 26px 0;
+}
+
+.notif-empty-icon {
+  font-size: 26px;
+  color: transparentize($muted, 0.3);
+}
+
+// Fundo de captura de clique: invisível de propósito. Escurecer aqui
+// escureceria a área de trabalho inteira toda vez que a central abrisse.
+.cc-backdrop {
+  background-color: transparent;
+}
+
+
+// Slide from the primary monitor's top edge; GTK animates opacity and
+// margins inside a fixed window, without resizing BSPWM's tiled windows.
+.media-root { background-color: transparent; }
+.media-panel {
+  background-color: transparentize($bg-alt, 0.025);
+  color: $fg;
+  border: 1px solid $surface;
+  border-radius: 0 0 26px 26px;
+  padding: 20px 26px;
+  margin: 0 12px 12px;
+  transition: margin 220ms cubic-bezier(0.32, 0.72, 0, 1), opacity 180ms ease-out;
+  &.is-closed { margin-top: -360px; margin-bottom: 372px; opacity: 0; }
+  &.is-open { margin-top: 0; opacity: 1; }
+}
+.media-cover { border-radius: 18px; background-color: $surface; }
+.media-title { font-family: "Noto Sans"; font-size: 21px; font-weight: 700; }
+.media-artist { font-family: "Noto Sans"; font-size: 13px; color: $fg-dim; }
+.media-album { font-family: "Noto Sans"; font-size: 11px; color: $muted; }
+.media-source { font-size: 10px; color: $accent; border-radius: 999px; background: $surface; padding: 6px 10px; }
+.media-play { color: $bg; background: $accent; border-radius: 999px; font-size: 25px; padding: 10px 12px; }
+.media-skip { color: $fg-dim; font-size: 24px; padding: 8px; }
+.media-skip:hover { color: $accent; }
+.media-transport button:disabled { opacity: 0.3; }
+.media-time { font-size: 10px; color: $muted; }
+.media-volume { margin-top: 2px; }
+.media-progress trough, .media-progress highlight { min-height: 5px; }

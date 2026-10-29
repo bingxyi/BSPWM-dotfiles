@@ -1,0 +1,267 @@
+# offsec-dotfiles :: sxhkdrc
+# Desktop keyboard shortcuts. Super is the modifier; hjkl moves focus.
+# Super+Shift moves windows. Super+/ opens this cheatsheet.
+
+## system
+# Reload keyboard shortcuts
+super + Escape
+	pkill -USR1 -x sxhkd && notify-send -a archlinux "sxhkd" "Shortcuts reloaded"
+
+# Reload bspwm
+super + shift + r
+	bspc wm -r && notify-send -a archlinux "bspwm" "Session reloaded"
+
+# Session and power menu
+super + x
+	~/.config/offsec/bin/powermenu.sh
+
+# Lock screen
+super + shift + x
+	~/.config/offsec/bin/lock.sh
+
+# Keyboard shortcuts
+super + slash
+	~/.config/offsec/bin/cheatsheet.sh
+
+## launchers
+# Terminal
+super + Return
+	kitty
+
+# Floating terminal (scratchpad)
+super + shift + Return
+	kitty --class scratchpad
+
+# Terminal in the active engagement directory
+super + ctrl + Return
+	~/.config/offsec/bin/engagement.sh --terminal
+
+# Application launcher
+super + d
+	~/.config/offsec/bin/launcher.sh
+
+# Run command
+super + shift + d
+	rofi -show run -theme ~/.config/rofi/themes/offsec.rasi
+
+# Open windows
+super + Tab
+	rofi -show window -theme ~/.config/rofi/themes/offsec.rasi
+
+# File manager (TUI and GUI)
+super + e
+	kitty --class yazi -e yazi
+
+super + shift + e
+	thunar
+
+# Editor
+super + n
+	kitty -e nvim
+
+# Browser
+super + b
+	firefox
+
+# Clipboard history
+super + v
+	~/.config/offsec/bin/clipboard.sh
+
+# Emoji / glyphs
+super + alt + period
+	~/.config/offsec/bin/emoji.sh
+
+## Appearance and session
+# Switch theme
+super + t
+	~/.config/offsec/bin/theme.sh --menu
+
+# Switch wallpaper
+super + w
+	~/.config/offsec/bin/wallpaper.sh --menu
+
+# Switch bar profile (nyx <-> vesper)
+super + shift + p
+	~/.config/offsec/bin/profile.sh --menu
+
+# Notification center
+super + alt + n
+	~/.config/offsec/bin/notifications.sh --toggle
+
+# Control center: Wi-Fi, Do not disturb, power, caffeine, sound,
+# engagement, calendar and notifications on the primary monitor
+super + {c,shift + n}
+	~/.config/offsec/bin/control.sh --toggle
+
+# Media center
+super + ctrl + m
+	~/.config/offsec/bin/media.sh --toggle
+
+# Security tools panel (rofi)
+super + shift + c
+	~/.config/offsec/bin/offsec-menu.sh
+
+# Keep awake: prevent automatic locking and screen blanking
+super + ctrl + c
+	~/.config/offsec/bin/caffeine.sh --toggle
+
+# Cycle CPU power profile
+super + ctrl + p
+	~/.config/offsec/bin/powerprofile.sh --cycle
+
+# Close current notification
+super + ctrl + n
+	dunstctl close
+
+## appsec (GUI)
+# Security tools: proxy, target, engagement, screenshot
+super + o
+	~/.config/offsec/bin/offsec-menu.sh
+
+# Active target (sets TARGET and updates the bar)
+super + shift + o
+	~/.config/offsec/bin/target.sh --menu
+
+# Lab VPN (tun0)
+super + shift + v
+	~/.config/offsec/bin/vpn.sh --menu
+
+# Burp Suite
+super + shift + b
+	~/.config/offsec/bin/proxy.sh --burp
+
+# Quick note in the active engagement
+super + shift + m
+	~/.config/offsec/bin/engagement.sh --note
+
+## screenshots
+# Select and annotate an area; Enter saves and copies, Escape cancels
+Print
+	~/.config/offsec/bin/screenshot.sh --area
+
+# Full screen
+shift + Print
+	~/.config/offsec/bin/screenshot.sh --full
+
+# Active window
+ctrl + Print
+	~/.config/offsec/bin/screenshot.sh --window
+
+# Toggle screen recording
+super + Print
+	~/.config/offsec/bin/screenshot.sh --record
+
+# Alternative area screenshot shortcut
+super + shift + s
+	~/.config/offsec/bin/screenshot.sh --area
+
+## windows
+# Close / kill
+super + q
+	bspc node -c
+
+super + shift + q
+	bspc node -k
+
+# Toggle tiled/floating and fullscreen
+super + shift + space
+	bspc node -t "~"floating
+
+super + f
+	bspc node -t "~"fullscreen
+
+super + shift + f
+	bspc node -t "~"pseudo_tiled
+
+# Monocle (bspwm tabbed layout)
+super + m
+	bspc desktop -l next
+
+# Sticky
+super + s
+	bspc node -g sticky
+
+# Hide / reveal
+super + minus
+	bspc node -g hidden
+
+super + shift + minus
+	bspc node "$(bspc query -N -d -n .hidden | head -n1)" -g hidden=off
+
+# Focus
+super + {h,j,k,l}
+	bspc node -f {west,south,north,east}
+
+super + {Left,Down,Up,Right}
+	bspc node -f {west,south,north,east}
+
+# Move window
+super + shift + {h,j,k,l}
+	bspc node -s {west,south,north,east} --follow
+
+super + shift + {Left,Down,Up,Right}
+	bspc node -s {west,south,north,east} --follow
+
+# Last node / last workspace
+super + grave
+	bspc node -f last
+
+# Rotate and balance
+super + r
+	bspc node @parent -R 90
+
+super + shift + equal
+	bspc node @parent -B
+
+# Resize toward the arrow (hold to repeat)
+super + alt + {h,j,k,l,Left,Down,Up,Right}
+	~/.config/offsec/bin/resize.sh {west,south,north,east,west,south,north,east} 40
+
+# Preselection
+super + ctrl + {h,j,k,l}
+	bspc node -p {west,south,north,east}
+
+super + ctrl + space
+	bspc node -p cancel
+
+# Adjust window gap
+super + {bracketleft,bracketright}
+	bspc config -d focused window_gap "$(($(bspc config -d focused window_gap) {-,+} 4))"
+
+## workspaces
+super + {1,2,3,4,5,6,7,8,9,0}
+	~/.config/offsec/bin/workspace.sh --focus {1,2,3,4,5,6,7,8,9,10}
+
+super + shift + {1,2,3,4,5,6,7,8,9,0}
+	~/.config/offsec/bin/workspace.sh --send {1,2,3,4,5,6,7,8,9,10}
+
+# Switch desktops on this monitor
+super + ctrl + {comma,period}
+	bspc desktop -f {prev,next}.local
+
+# Switch monitors
+super + {comma,period}
+	bspc monitor -f {prev,next}
+
+super + shift + {comma,period}
+	bspc node -m {prev,next} --follow
+
+## hardware
+XF86Audio{RaiseVolume,LowerVolume}
+	~/.config/offsec/bin/volume.sh {--up,--down}
+
+XF86AudioMute
+	~/.config/offsec/bin/volume.sh --toggle
+
+XF86AudioMicMute
+	~/.config/offsec/bin/volume.sh --mic-toggle
+
+XF86Audio{Play,Prev,Next}
+	playerctl {play-pause,previous,next}
+
+XF86MonBrightness{Up,Down}
+	~/.config/offsec/bin/brightness.sh {--up,--down}
+
+# Persistent mouse preferences
+super + alt + m
+	~/.config/offsec/bin/mouse-settings.py

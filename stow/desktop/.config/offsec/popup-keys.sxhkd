@@ -1,0 +1,3 @@
+# Grab Escape only for the lifetime of an open Eww popup.
+Escape
+	~/.config/offsec/bin/panel.sh close

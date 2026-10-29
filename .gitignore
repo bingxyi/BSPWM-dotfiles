@@ -1,0 +1,64 @@
+# Secrets and credentials
+.env
+.env.*
+*.env
+!.env.example
+.ssh/
+.gnupg/
+.aws/
+.azure/
+.kube/
+credentials*
+secrets.*
+id_rsa*
+id_ed25519*
+*.key
+*.pem
+*.p12
+*.pfx
+*.ovpn
+*.kdbx
+# Editor state, caches, history and build artifacts
+*.swp
+*.swo
+*.swx
+*.un~
+*~
+*.bak*
+*.tmp
+*.log
+.nvimlog
+.zsh_history
+.bash_history
+.python_history
+history
+.zcompdump*
+.cache/
+__pycache__/
+*.py[cod]
+.DS_Store
+.install.lock
+backups/
+engagements/
+vpn/
+# Private machine configuration and avatar
+stow/**/local.sh
+stow/**/monitors.local.sh
+stow/**/avatar.png
+# Generated, mutable theme files; the sources live in templates/ and defaults/
+stow/desktop/.config/offsec/current-theme.conf
+stow/desktop/.config/offsec/profile
+stow/desktop/.config/offsec/mouse.json
+stow/desktop/.config/offsec/login/silent-offsec/configs/offsec.conf
+stow/desktop/.config/offsec/login/silent-offsec/backgrounds/offsec-wallpaper.png
+stow/desktop/.config/tint2/tint2rc
+stow/desktop/.config/kitty/current-theme.conf
+stow/desktop/.config/rofi/colors.rasi
+stow/desktop/.config/dunst/dunstrc
+stow/desktop/.config/eww/colors.scss
+stow/desktop/.config/gtk-3.0/settings.ini
+stow/desktop/.config/xsettingsd/xsettingsd.conf
+stow/editor/.config/nvim/lua/offsec-theme.lua
+
+# GTK bookmarks are personal and remain outside the repository
+stow/**/bookmarks

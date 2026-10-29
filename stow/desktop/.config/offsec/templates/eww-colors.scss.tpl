@@ -1,0 +1,19 @@
+// gerado por theme.sh — não editar à mão
+$bg: {{bg}};
+$bg-alt: {{bg_alt}};
+$bg-dim: {{bg_dim}};
+$surface: {{surface}};
+$overlay: {{overlay}};
+$muted: {{muted}};
+$fg: {{fg}};
+$fg-dim: {{fg_dim}};
+$red: {{red}};
+$green: {{green}};
+$yellow: {{yellow}};
+$blue: {{blue}};
+$magenta: {{magenta}};
+$cyan: {{cyan}};
+$orange: {{orange}};
+$accent: {{accent}};
+$accent-alt: {{accent_alt}};
+$urgent: {{urgent}};

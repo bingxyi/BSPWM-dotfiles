@@ -1,0 +1,9 @@
+Net/ThemeName "{{gtk_theme}}"
+Net/IconThemeName "{{gtk_icons}}"
+Gtk/CursorThemeName "catppuccin-mocha-dark-cursors"
+Gtk/CursorThemeSize 24
+Xft/Antialias 1
+Xft/Hinting 1
+Xft/HintStyle "hintslight"
+Xft/RGBA "none"
+Gtk/EnableAnimations 1

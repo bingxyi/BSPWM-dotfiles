@@ -1,0 +1,29 @@
+# gerado por theme.sh — usado por lock.sh / betterlockscreen
+display_on=0
+span_image=false
+lock_timeout=300
+fx_list=(dimblur)
+dim_level=18
+blur_level=1
+time_format="%H:%M"
+quiet=true
+
+loginbox={{bg_raw}}bb
+loginshadow=00000000
+locktext="Session locked"
+font="JetBrainsMono Nerd Font"
+ringcolor={{surface_raw}}ff
+insidecolor=00000000
+ringvercolor={{accent_raw}}ff
+insidevercolor=00000000
+ringwrongcolor={{urgent_raw}}ff
+insidewrongcolor=00000000
+timecolor={{fg_raw}}ff
+greetercolor={{fg_dim_raw}}ff
+layoutcolor={{fg_dim_raw}}ff
+keyhlcolor={{accent_raw}}ff
+bshlcolor={{urgent_raw}}ff
+separatorcolor=00000000
+verifcolor={{accent_raw}}ff
+wrongcolor={{urgent_raw}}ff
+modifcolor={{yellow_raw}}ff

@@ -1,0 +1,126 @@
+# gerado por theme.sh — não editar à mão (edite templates/dunstrc.tpl)
+# requer dunst >= 1.11 (sintaxe de offset/height em pares)
+
+[global]
+    monitor = 0
+    follow = mouse
+    idle_threshold = 0
+
+    width = (280, 420)
+    height = (0, 320)
+    origin = top-right
+    offset = (18, 18)
+    scale = 0
+    notification_limit = 3
+
+    progress_bar = true
+    progress_bar_height = 8
+    progress_bar_frame_width = 0
+    progress_bar_min_width = 200
+    progress_bar_max_width = 400
+    progress_bar_corner_radius = 4
+
+    indicate_hidden = yes
+    transparency = 8
+    separator_height = 6
+    padding = 14
+    horizontal_padding = 16
+    text_icon_padding = 12
+    frame_width = 2
+    frame_color = "{{accent}}"
+    gap_size = 8
+    separator_color = frame
+    sort = yes
+    corner_radius = 12
+
+    font = JetBrainsMono Nerd Font 10
+    line_height = 2
+    markup = full
+    format = "<b>%s</b>\n%b"
+    alignment = left
+    vertical_alignment = center
+    show_age_threshold = 60
+    ellipsize = middle
+    ignore_newline = no
+    stack_duplicates = true
+    hide_duplicate_count = false
+    show_indicators = no
+
+    enable_recursive_icon_lookup = true
+    icon_theme = "{{gtk_icons}}, Adwaita"
+    icon_position = left
+    min_icon_size = 32
+    max_icon_size = 48
+
+    sticky_history = no
+    history_length = 20
+
+    dmenu = /usr/bin/rofi -dmenu -p dunst
+    browser = /usr/bin/xdg-open
+    always_run_script = true
+    title = Dunst
+    class = Dunst
+    ignore_dbusclose = false
+
+    mouse_left_click = do_action, close_current
+    mouse_middle_click = close_all
+    mouse_right_click = close_current
+
+[urgency_low]
+    background = "{{bg_alt}}"
+    foreground = "{{fg_dim}}"
+    frame_color = "{{surface}}"
+    timeout = 6
+
+[urgency_normal]
+    background = "{{bg_alt}}"
+    foreground = "{{fg}}"
+    frame_color = "{{accent}}"
+    timeout = 6
+
+[urgency_critical]
+    background = "{{bg_alt}}"
+    foreground = "{{fg}}"
+    frame_color = "{{urgent}}"
+    timeout = 6
+
+# notificações de volume/brilho substituem a anterior em vez de empilhar
+[osd]
+    appname = archlinux
+    stack_tag = osd
+    format = "<b>%s</b>\n%b"
+    timeout = 6
+    history_ignore = yes
+
+# alimenta a central de notificações (rofi no Nyx, painel eww no Vesper)
+[offsec-log]
+    appname = "*"
+    script = "{{home}}/.config/offsec/bin/notif-log.sh"
+
+# Confirmações dos controles: feedback breve, sem acumular no histórico.
+[offsec-feedback]
+    appname = archlinux
+    msg_urgency = low
+    history_ignore = yes
+    timeout = 6
+
+# Alertas de terminal repetitivos; falhas críticas continuam visíveis.
+[terminal-feedback]
+    appname = kitty
+    summary = kitty
+    msg_urgency = normal
+    history_ignore = yes
+    format = ""
+
+[terminal-feedback-low]
+    appname = kitty
+    summary = kitty
+    msg_urgency = low
+    history_ignore = yes
+    format = ""
+
+# All visible notifications expire after six seconds, including client timeout=0.
+[expire-all]
+    appname = "*"
+    timeout = 6s
+    override_dbus_timeout = 6s

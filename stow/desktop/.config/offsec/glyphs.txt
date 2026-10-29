@@ -1,0 +1,32 @@
+# Glyph descriptions for the picker
+🔴 critical severity
+🟠 high severity
+🟡 medium severity
+🔵 low severity
+⚪ informational
+✅ fixed / verified
+❌ not fixed
+⚠️ warning
+🔒 control present
+🔓 control absent
+🧪 proof of concept
+📌 important note
+🧭 step by step
+🕵️ reconnaissance
+💣 exploitation
+📈 impact
+🧱 mitigation
+→ simple arrow
+⇒ implies
+├─ tree branch
+└─ tree end
+│ tree line
+✔ check
+✘ cross
+• bullet
+… ellipsis
+« opening quotes
+» closing quotes
+─ horizontal line
+█ solid block
+░ light block

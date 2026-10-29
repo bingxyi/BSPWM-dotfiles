@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Lança o Burp Suite Professional (instalação em ~/Burpsuite-Professional).
+# O nome "burpsuite-pro" é o que o proxy.sh --burp (super+shift+b) procura no PATH.
+
+BURP_DIR="$HOME/Burpsuite-Professional"
+shopt -s nullglob
+burp_jars=("$BURP_DIR"/burpsuite_pro_v*.jar)
+BURP_JAR=''
+if ((${#burp_jars[@]})); then
+    mapfile -d '' -t burp_jars < <(printf '%s\0' "${burp_jars[@]}" | sort -zV)
+    BURP_JAR=${burp_jars[-1]}
+fi
+
+if [ -z "$BURP_JAR" ]; then
+    notify-send -a archlinux -u critical -i dialog-error "burp" "JAR not found in $BURP_DIR"
+    exit 1
+fi
+
+# bspwm não é reparenting: sem isso o Swing abre janela cinza
+export _JAVA_AWT_WM_NONREPARENTING=1
+
+cd "$BURP_DIR" || exit 1
+exec java \
+    --add-opens=java.desktop/javax.swing=ALL-UNNAMED \
+    --add-opens=java.base/java.lang=ALL-UNNAMED \
+    --add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED \
+    --add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED \
+    --add-opens=java.base/jdk.internal.org.objectweb.asm.Opcodes=ALL-UNNAMED \
+    -javaagent:"$BURP_DIR/loader.jar" \
+    -noverify \
+    -jar "$BURP_JAR" "$@"

@@ -1,0 +1,122 @@
+/* offsec-dotfiles :: lançador principal */
+
+* {
+    background-color: transparent;
+    text-color:       @fg;
+    font:             "JetBrainsMono Nerd Font 11";
+}
+
+window {
+    transparency:     "real";
+    location:         center;
+    anchor:           center;
+    width:            720px;
+    border-radius:    16px;
+    border:           2px;
+    border-color:     @accent;
+    background-color: @bg;
+    padding:          0px;
+    children:         [ mainbox ];
+}
+
+mainbox {
+    padding:  20px;
+    spacing:  16px;
+    children: [ inputbar, message, listview, mode-switcher ];
+}
+
+inputbar {
+    background-color: @bg-alt;
+    border-radius:    12px;
+    padding:          12px 16px;
+    spacing:          12px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    text-color: @accent;
+    vertical-align: 0.5;
+}
+
+entry {
+    placeholder:       "buscar…";
+    placeholder-color: @muted;
+    vertical-align:    0.5;
+    cursor:            text;
+}
+
+message {
+    background-color: @bg-alt;
+    border-radius:    10px;
+    padding:          8px 14px;
+}
+
+textbox {
+    text-color: @fg-dim;
+    highlight:  @hl-accent;
+}
+
+listview {
+    columns:      1;
+    lines:        9;
+    fixed-height: false;
+    spacing:      4px;
+    scrollbar:    false;
+    cycle:        true;
+    dynamic:      true;
+}
+
+element {
+    padding:       10px 14px;
+    spacing:       14px;
+    border-radius: 10px;
+    cursor:        pointer;
+}
+
+element normal.normal { text-color: @fg-dim; }
+element alternate.normal { text-color: @fg-dim; }
+
+element selected.normal {
+    background-color: @accent;
+    text-color:       @bg;
+}
+
+element urgent.normal {
+    text-color: @urgent-col;
+}
+
+element-icon {
+    size:           26px;
+    vertical-align: 0.5;
+}
+
+element-text {
+    vertical-align: 0.5;
+    highlight:      @hl-accent-alt;
+}
+
+element selected.normal element-text {
+    text-color: @bg;
+    highlight:  @hl-bg;
+}
+
+mode-switcher {
+    spacing: 8px;
+}
+
+button {
+    padding:          8px;
+    border-radius:    10px;
+    background-color: @bg-alt;
+    text-color:       @muted;
+    cursor:           pointer;
+}
+
+button selected {
+    background-color: @surface;
+    text-color:       @accent;
+}
+
+/* paleta por ultimo: no rofi 2.0 as variaveis do arquivo importado
+   so resolvem se o @import vier depois de quem as usa. */
+@import "../colors.rasi"

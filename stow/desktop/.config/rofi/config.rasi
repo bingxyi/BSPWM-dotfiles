@@ -1,0 +1,34 @@
+/* offsec-dotfiles :: rofi */
+configuration {
+    modes: "drun,run,window,filebrowser";
+    font: "JetBrainsMono Nerd Font 11";
+    show-icons: true;
+    icon-theme: "Papirus-Dark";
+    drun-display-format: "{name}";
+    display-drun: "  apps";
+    display-run: "  exec";
+    display-window: "  windows";
+    display-filebrowser: "  files";
+    window-format: "{w}  {c}   {t}";
+    terminal: "kitty";
+    sidebar-mode: false;
+    hover-select: true;
+    me-select-entry: "";
+    me-accept-entry: "MousePrimary";
+    kb-cancel: "Escape,MouseSecondary";
+    /* Control+k e Control+j sao dos padroes kb-remove-to-eol e
+       kb-accept-entry. O rofi recusa a ligacao INTEIRA quando uma das teclas
+       ja tem dono — era por isso que ate as setas paravam de funcionar.
+       Libera-se o dono padrao antes de reaproveitar a tecla. */
+    kb-remove-to-eol: "";
+    kb-accept-entry: "Return,KP_Enter,Control+m";
+    kb-row-up: "Up,Control+k,Control+p";
+    kb-row-down: "Down,Control+j,Control+n";
+    kb-mode-next: "Shift+Right,Control+Tab";
+    kb-mode-previous: "Shift+Left,Control+Shift+Tab";
+    matching: "fuzzy";
+    sort: true;
+    sorting-method: "fzf";
+}
+
+@theme "~/.config/rofi/themes/offsec.rasi"

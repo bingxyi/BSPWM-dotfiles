@@ -1,0 +1,7 @@
+# offsec-dotfiles :: perfil de energia sem senha, com argumentos fixos.
+# Instalar: sudo install -Dm440 ~/.config/offsec/system/sudoers-offsec-powerprofile /etc/sudoers.d/offsec-powerprofile
+# Só estes três comandos exatos passam; não há wildcard nem caminho de arquivo
+# escolhido pelo chamador, então a regra não vira primitiva de escrita genérica.
+@USER@ ALL=(root) NOPASSWD: /usr/local/bin/offsec-powerprofile performance
+@USER@ ALL=(root) NOPASSWD: /usr/local/bin/offsec-powerprofile balanced
+@USER@ ALL=(root) NOPASSWD: /usr/local/bin/offsec-powerprofile power

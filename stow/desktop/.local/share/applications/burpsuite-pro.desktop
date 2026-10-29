@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Burp Suite Professional
+Comment=Intercepting proxy and web scanner
+Exec=burpsuite-pro
+Icon=burpsuite
+Terminal=false
+StartupWMClass=burp-StartBurp
+Categories=Development;Security;Network;
+Keywords=burp;proxy;pentest;appsec;

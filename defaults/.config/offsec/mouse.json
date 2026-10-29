@@ -1,0 +1,30 @@
+{
+  "2.4G Wireless Device|7511,64096": {
+    "libinput Accel Speed": [
+      -0.15
+    ],
+    "libinput Accel Profile Enabled": [
+      0,
+      1,
+      0
+    ],
+    "libinput Natural Scrolling Enabled": [
+      0
+    ],
+    "libinput Left Handed Enabled": [
+      0
+    ],
+    "libinput Middle Emulation Enabled": [
+      0
+    ],
+    "libinput Horizontal Scroll Enabled": [
+      1
+    ],
+    "libinput Scrolling Pixel Distance": [
+      30
+    ],
+    "libinput High Resolution Wheel Scroll Enabled": [
+      1
+    ]
+  }
+}

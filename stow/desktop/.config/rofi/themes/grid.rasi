@@ -1,0 +1,74 @@
+/* offsec-dotfiles :: grade de wallpapers com preview */
+
+* {
+    background-color: transparent;
+    text-color:       @fg;
+    font:             "JetBrainsMono Nerd Font 10";
+}
+
+window {
+    transparency:     "real";
+    location:         center;
+    width:            72%;
+    height:           68%;
+    border-radius:    18px;
+    border:           2px;
+    border-color:     @accent;
+    background-color: @bg;
+}
+
+mainbox {
+    padding:  22px;
+    spacing:  16px;
+    children: [ inputbar, listview ];
+}
+
+inputbar {
+    background-color: @bg-alt;
+    border-radius:    12px;
+    padding:          10px 14px;
+    children:         [ prompt, entry ];
+    spacing:          10px;
+}
+
+prompt { text-color: @accent; vertical-align: 0.5; }
+entry  { placeholder: "wallpaper…"; placeholder-color: @muted; vertical-align: 0.5; }
+
+listview {
+    columns:   4;
+    lines:     3;
+    spacing:   14px;
+    scrollbar: false;
+    cycle:     true;
+    fixed-height: true;
+}
+
+element {
+    orientation:   vertical;
+    padding:       10px;
+    spacing:       8px;
+    border-radius: 12px;
+    cursor:        pointer;
+}
+
+element-icon {
+    size:         160px;
+    horizontal-align: 0.5;
+}
+
+element-text {
+    horizontal-align: 0.5;
+    text-color:       @fg-dim;
+}
+
+element selected.normal {
+    background-color: @surface;
+    border:           2px;
+    border-color:     @accent;
+}
+
+element selected.normal element-text { text-color: @fg; }
+
+/* paleta por ultimo: no rofi 2.0 as variaveis do arquivo importado
+   so resolvem se o @import vier depois de quem as usa. */
+@import "../colors.rasi"

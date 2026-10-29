@@ -1,0 +1,57 @@
+/* offsec-dotfiles :: menu de energia */
+
+* {
+    background-color: transparent;
+    text-color:       @fg;
+    font:             "JetBrainsMono Nerd Font 12";
+}
+
+window {
+    transparency:     "real";
+    location:         center;
+    width:            420px;
+    border-radius:    18px;
+    border:           2px;
+    border-color:     @urgent-col;
+    background-color: @bg;
+}
+
+mainbox {
+    padding:  20px;
+    spacing:  14px;
+    children: [ inputbar, listview ];
+}
+
+inputbar {
+    background-color: @bg-alt;
+    border-radius:    12px;
+    padding:          10px 14px;
+    children:         [ prompt, entry ];
+    spacing:          10px;
+}
+
+prompt { text-color: @urgent-col; vertical-align: 0.5; }
+entry  { placeholder: "…"; placeholder-color: @muted; vertical-align: 0.5; }
+
+listview {
+    lines:     5;
+    spacing:   6px;
+    scrollbar: false;
+    cycle:     true;
+}
+
+element {
+    padding:       12px 16px;
+    border-radius: 12px;
+    cursor:        pointer;
+}
+
+element normal.normal { text-color: @fg-dim; }
+element selected.normal {
+    background-color: @urgent-col;
+    text-color:       @bg;
+}
+
+/* paleta por ultimo: no rofi 2.0 as variaveis do arquivo importado
+   so resolvem se o @import vier depois de quem as usa. */
+@import "../colors.rasi"

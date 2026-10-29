@@ -1,0 +1,38 @@
+# gerado por theme.sh — não editar à mão
+foreground              {{fg}}
+background              {{bg}}
+selection_foreground    {{bg}}
+selection_background    {{accent}}
+cursor                  {{accent}}
+cursor_text_color       {{bg}}
+url_color               {{cyan}}
+
+active_border_color     {{accent}}
+inactive_border_color   {{surface}}
+bell_border_color       {{urgent}}
+
+active_tab_foreground   {{bg}}
+active_tab_background   {{accent}}
+inactive_tab_foreground {{muted}}
+inactive_tab_background {{bg_alt}}
+tab_bar_background      {{bg_alt}}
+
+mark1_foreground {{bg}}
+mark1_background {{accent}}
+
+color0  {{surface}}
+color8  {{overlay}}
+color1  {{red}}
+color9  {{red}}
+color2  {{green}}
+color10 {{green}}
+color3  {{yellow}}
+color11 {{yellow}}
+color4  {{blue}}
+color12 {{blue}}
+color5  {{magenta}}
+color13 {{magenta}}
+color6  {{cyan}}
+color14 {{cyan}}
+color7  {{fg_dim}}
+color15 {{fg}}
