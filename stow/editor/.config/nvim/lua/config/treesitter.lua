@@ -7,7 +7,7 @@ function M.setup()
   local available = require('nvim-treesitter.parsers')
   vim.treesitter.language.register('json', 'jsonc')
   local pending = {}
-  local group = vim.api.nvim_create_augroup('offsec_treesitter', { clear = true })
+  local group = vim.api.nvim_create_augroup('rice_treesitter', { clear = true })
 
   local function attach(buf)
     if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].buftype ~= '' then return end

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# BSPWM-dotfiles :: emit workspaces as JSON for Eww (deflisten)
+# rice :: emit workspaces as JSON for Eww (deflisten)
 # React to each bspwm event without renaming desktops. Read the names
 # assigned by monitors.sh and map each position to a role icon.
 

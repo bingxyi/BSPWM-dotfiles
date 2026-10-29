@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# rice :: privileged power profile helper (amd-pstate / intel-pstate)
+#
+# Install:
+#   sudo install -Dm755 ~/.config/rice/system/rice-powerprofile /usr/local/bin/rice-powerprofile
+#   sudo install -Dm440 ~/.config/rice/system/sudoers-rice-powerprofile /etc/sudoers.d/rice-powerprofile
+#
+# Accept exactly one of: performance | balanced | power. Write nothing else
+# to sysfs. The sudoers rule fixes the three permitted arguments,
+# so the caller cannot choose an arbitrary file path.
+set -euo pipefail
+
+case "${1:-}" in
+performance) GOV=performance; EPP=performance ;;
+balanced)    GOV=powersave;   EPP=balance_performance ;;
+power)       GOV=powersave;   EPP=power ;;
+*) echo "uso: $(basename "$0") {performance|balanced|power}" >&2; exit 2 ;;
+esac
+
+shopt -s nullglob
+for d in /sys/devices/system/cpu/cpu[0-9]*/cpufreq; do
+    [ -w "$d/scaling_governor" ] && printf '%s\n' "$GOV" > "$d/scaling_governor" || true
+    [ -w "$d/energy_performance_preference" ] &&
+        printf '%s\n' "$EPP" > "$d/energy_performance_preference" || true
+done
+exit 0

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# BSPWM-dotfiles :: notification history as JSON for Eww
+# rice :: notification history as JSON for Eww
 # Read the file written by notif-log.sh, which is called by Dunst.
 
-LOG="${XDG_DATA_HOME:-$HOME/.local/share}/offsec/notifications.json"
+LOG="${XDG_DATA_HOME:-$HOME/.local/share}/rice/notifications.json"
 
 if ! command -v jq &>/dev/null; then
     echo '[]'

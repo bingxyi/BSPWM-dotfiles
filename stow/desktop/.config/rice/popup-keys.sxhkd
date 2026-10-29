@@ -1,0 +1,3 @@
+# Grab Escape only for the lifetime of an open Eww popup.
+Escape
+	~/.config/rice/bin/panel.sh close

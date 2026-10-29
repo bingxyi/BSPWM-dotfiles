@@ -1,17 +1,17 @@
-;; BSPWM-dotfiles :: Vesper profile — left sidebar (Eww)
+;; rice :: Vesper profile — left sidebar (Eww)
 ;; GTK widgets: workspaces with role icons, a control panel,
 ;; and a notification center. monitors.sh owns monitor geometry;
 ;; only the bar width is declared here.
 
 ;; ---------------------------------------------------------------- variables
-;; Updated by ~/.config/offsec/bin scripts through "eww update".
+;; Updated by ~/.config/rice/bin scripts through "eww update".
 (defpoll volume :interval "2s" :initial "0" :run-while cc_visible
-  "$HOME/.config/offsec/bin/volume.sh --get")
+  "$HOME/.config/rice/bin/volume.sh --get")
 (defpoll target :interval "10s" :initial "No target" :run-while cc_visible
-  `bash -c 'source "$HOME/.config/offsec/bin/lib.sh"; state_get target "No target"'`)
-(defpoll vpn :interval "8s" :initial "off" :run-while cc_visible "$HOME/.config/offsec/bin/vpn.sh --status")
-(defpoll engagement :interval "10s" :initial "" :run-while cc_visible "$HOME/.config/offsec/bin/engagement.sh --name")
-(defpoll notif_count :interval "4s" :initial "0" :run-while cc_visible "$HOME/.config/offsec/bin/notifications.sh --count")
+  `bash -c 'source "$HOME/.config/rice/bin/lib.sh"; state_get target "No target"'`)
+(defpoll vpn :interval "8s" :initial "off" :run-while cc_visible "$HOME/.config/rice/bin/vpn.sh --status")
+(defpoll engagement :interval "10s" :initial "" :run-while cc_visible "$HOME/.config/rice/bin/engagement.sh --name")
+(defpoll notif_count :interval "4s" :initial "0" :run-while cc_visible "$HOME/.config/rice/bin/notifications.sh --count")
 
 (deflisten workspaces :initial "[]" "$HOME/.config/eww/scripts/workspaces.sh")
 (defpoll notifications :interval "4s" :run-while cc_visible :initial "[]" "$HOME/.config/eww/scripts/notif-json.sh")
@@ -22,12 +22,12 @@
 (defpoll cpu :interval "3s" "$HOME/.config/eww/scripts/sysinfo.sh --cpu")
 (defpoll mem :interval "5s" "$HOME/.config/eww/scripts/sysinfo.sh --mem")
 (defpoll temp :interval "8s" "$HOME/.config/eww/scripts/sysinfo.sh --temp")
-(defpoll net_icon :interval "6s" "$HOME/.config/offsec/bin/network.sh --icon")
-(defpoll dnd :interval "5s" "$HOME/.config/offsec/bin/notifications.sh --status")
-(defpoll bat_level :interval "30s" "$HOME/.config/offsec/bin/battery.sh --get")
-(defpoll bat_icon :interval "30s" "$HOME/.config/offsec/bin/battery.sh --icon")
-(defpoll bat_status :interval "30s" "$HOME/.config/offsec/bin/battery.sh --status")
-(defpoll bat_tip :interval "30s" "$HOME/.config/offsec/bin/battery.sh --tooltip")
+(defpoll net_icon :interval "6s" "$HOME/.config/rice/bin/network.sh --icon")
+(defpoll dnd :interval "5s" "$HOME/.config/rice/bin/notifications.sh --status")
+(defpoll bat_level :interval "30s" "$HOME/.config/rice/bin/battery.sh --get")
+(defpoll bat_icon :interval "30s" "$HOME/.config/rice/bin/battery.sh --icon")
+(defpoll bat_status :interval "30s" "$HOME/.config/rice/bin/battery.sh --status")
+(defpoll bat_tip :interval "30s" "$HOME/.config/rice/bin/battery.sh --tooltip")
 
 ;; ------------------------------------------- control center state
 ;; cc_reveal is animation-only: open an invisible window, then slide its contents.
@@ -39,21 +39,21 @@
 
 (defpoll clock_time  :interval "5s" :run-while cc_visible  :initial "--:--" "date '+%H:%M'")
 (defpoll clock_date  :interval "60s" :run-while cc_visible :initial "" "date '+%A, %B %d'")
-(defpoll wifi_state  :interval "8s" :run-while cc_visible  :initial "off" "$HOME/.config/offsec/bin/network.sh --wifi-state")
-(defpoll wifi_name   :interval "8s" :run-while cc_visible  :initial "—" "$HOME/.config/offsec/bin/network.sh --wifi-name")
-(defpoll net_label   :interval "8s" :run-while cc_visible  :initial "…" "$HOME/.config/offsec/bin/network.sh --status")
-(defpoll caffeine    :interval "10s" :run-while cc_visible :initial "off" "$HOME/.config/offsec/bin/caffeine.sh --status")
-(defpoll power_profile :interval "10s" :run-while cc_visible :initial "balanced" "$HOME/.config/offsec/bin/powerprofile.sh --get")
-(defpoll power_label   :interval "10s" :run-while cc_visible :initial "Balanced" "$HOME/.config/offsec/bin/powerprofile.sh --label")
-(defpoll power_writable :interval "60s" :run-while cc_visible :initial "0" "$HOME/.config/offsec/bin/powerprofile.sh --available")
+(defpoll wifi_state  :interval "8s" :run-while cc_visible  :initial "off" "$HOME/.config/rice/bin/network.sh --wifi-state")
+(defpoll wifi_name   :interval "8s" :run-while cc_visible  :initial "—" "$HOME/.config/rice/bin/network.sh --wifi-name")
+(defpoll net_label   :interval "8s" :run-while cc_visible  :initial "…" "$HOME/.config/rice/bin/network.sh --status")
+(defpoll caffeine    :interval "10s" :run-while cc_visible :initial "off" "$HOME/.config/rice/bin/caffeine.sh --status")
+(defpoll power_profile :interval "10s" :run-while cc_visible :initial "balanced" "$HOME/.config/rice/bin/powerprofile.sh --get")
+(defpoll power_label   :interval "10s" :run-while cc_visible :initial "Balanced" "$HOME/.config/rice/bin/powerprofile.sh --label")
+(defpoll power_writable :interval "60s" :run-while cc_visible :initial "0" "$HOME/.config/rice/bin/powerprofile.sh --available")
 
 ;; ------------------------------------------------------------ bar blocks
 (defwidget launcher []
   (box :class "block" :orientation "v" :space-evenly false :spacing 4
     (button :class "icon-btn accent" :tooltip "Application menu (Super+D)"
-            :onclick "$HOME/.config/offsec/bin/launcher.sh &" "")
+            :onclick "$HOME/.config/rice/bin/launcher.sh &" "")
     (button :class "icon-btn" :tooltip "Security panel (Super+O)"
-            :onclick "$HOME/.config/offsec/bin/offsec-menu.sh &" "")
+            :onclick "$HOME/.config/rice/bin/rice-menu.sh &" "")
     (button :class "icon-btn" :tooltip "terminal (Super+Return)"
             :onclick "kitty &" "")))
 
@@ -69,16 +69,16 @@
   (box :class "block" :orientation "v" :space-evenly false :spacing 4
     (button :class {engagement != "" ? "icon-btn accent" : "icon-btn dim"}
             :tooltip "engagement: ${engagement != "" ? engagement : "none"}"
-            :onclick "$HOME/.config/offsec/bin/control.sh --toggle &"
+            :onclick "$HOME/.config/rice/bin/control.sh --toggle &"
       {engagement != "" ? "󰯄" : "󰋣"})
     (button :class {target != "No target" ? "icon-btn red" : "icon-btn dim"}
             :tooltip "target: ${target}"
-            :onclick "$HOME/.config/offsec/bin/target.sh --menu &" "")
+            :onclick "$HOME/.config/rice/bin/target.sh --menu &" "")
     (button :class {vpn != "off" ? "icon-btn yellow" : "icon-btn dim"}
             :tooltip "vpn: ${vpn}"
-            :onclick "$HOME/.config/offsec/bin/vpn.sh --menu &" "󰖂")
+            :onclick "$HOME/.config/rice/bin/vpn.sh --menu &" "󰖂")
     (button :class "icon-btn" :tooltip "proxy (Burp/ZAP/mitmproxy)"
-            :onclick "$HOME/.config/offsec/bin/proxy.sh --menu &" "󰯃")))
+            :onclick "$HOME/.config/rice/bin/proxy.sh --menu &" "󰯃")))
 
 (defwidget sysinfo []
   (box :class "block" :orientation "v" :space-evenly false :spacing 6
@@ -95,14 +95,14 @@
 (defwidget tray_block []
   (box :class "block" :orientation "v" :space-evenly false :spacing 4
     (button :class "icon-btn" :tooltip "media (Super+Ctrl+M)"
-            :timeout "2s" :onclick "$HOME/.config/offsec/bin/media.sh --toggle &" "󰝚")
+            :timeout "2s" :onclick "$HOME/.config/rice/bin/media.sh --toggle &" "󰝚")
     (button :class "icon-btn" :tooltip "network"
-            :onclick "$HOME/.config/offsec/bin/network.sh --menu &" net_icon)
+            :onclick "$HOME/.config/rice/bin/network.sh --menu &" net_icon)
     (button :class "icon-btn" :tooltip "audio: ${volume}%"
-            :onclick "$HOME/.config/offsec/bin/control.sh --toggle &" "󰕾")
+            :onclick "$HOME/.config/rice/bin/control.sh --toggle &" "󰕾")
     (button :class {dnd == "dnd" ? "icon-btn red" : (notif_count != "0" ? "icon-btn accent" : "icon-btn dim")}
             :tooltip "notifications: ${notif_count} · Super+Alt+N"
-            :onclick "$HOME/.config/offsec/bin/notifications.sh --toggle &"
+            :onclick "$HOME/.config/rice/bin/notifications.sh --toggle &"
       {dnd == "dnd" ? "󰂛" : (notif_count != "0" ? "󰂚" : "󰂜")})
     (box :class "battery" :orientation "v" :space-evenly false
          :visible {bat_level != ""}
@@ -110,19 +110,19 @@
                       : (bat_level != "" && bat_level < 16 ? "icon-btn red"
                          : (bat_level != "" && bat_level < 36 ? "icon-btn yellow" : "icon-btn"))}
               :tooltip bat_tip
-              :onclick "$HOME/.config/offsec/bin/powermenu.sh &"
+              :onclick "$HOME/.config/rice/bin/powermenu.sh &"
         bat_icon)
       (label :class "metric-value" :text bat_level))))
 
 (defwidget clock_block []
   (box :class "block clock" :orientation "v" :space-evenly false :spacing 2
     (button :class "clock-btn" :tooltip clock_full
-            :onclick "$HOME/.config/offsec/bin/control.sh --toggle &"
+            :onclick "$HOME/.config/rice/bin/control.sh --toggle &"
       (box :orientation "v" :space-evenly false
         (label :class "clock-hour" :text clock_hour)
         (label :class "clock-min" :text clock_min)))
     (button :class "icon-btn red" :tooltip "session (Super+X)"
-            :onclick "$HOME/.config/offsec/bin/powermenu.sh &" "⏻")))
+            :onclick "$HOME/.config/rice/bin/powermenu.sh &" "⏻")))
 
 (defwidget bar_layout []
   (box :class "bar" :orientation "v" :space-evenly false
@@ -161,15 +161,15 @@
         (label :class "cc-date" :text clock_date :halign "start"))
       (box :orientation "h" :space-evenly false :spacing 6 :valign "start"
         (button :class "cc-mini" :tooltip "media (Super+Ctrl+M)"
-                :timeout "2s" :onclick "$HOME/.config/offsec/bin/media.sh --open &" "󰝚")
+                :timeout "2s" :onclick "$HOME/.config/rice/bin/media.sh --open &" "󰝚")
         (button :class "cc-mini" :tooltip "Close (Esc)"
-                :onclick "$HOME/.config/offsec/bin/control.sh --close &" "󰅖")
+                :onclick "$HOME/.config/rice/bin/control.sh --close &" "󰅖")
         (button :class "cc-mini" :tooltip "Security panel"
-                :onclick "$HOME/.config/offsec/bin/offsec-menu.sh &" "󰒓")
+                :onclick "$HOME/.config/rice/bin/rice-menu.sh &" "󰒓")
         (button :class "cc-mini" :tooltip "Lock (Super+Shift+X)"
-                :onclick "$HOME/.config/offsec/bin/control.sh --close; $HOME/.config/offsec/bin/lock.sh &" "󰌾")
+                :onclick "$HOME/.config/rice/bin/control.sh --close; $HOME/.config/rice/bin/lock.sh &" "󰌾")
         (button :class "cc-mini danger" :tooltip "session"
-                :onclick "$HOME/.config/offsec/bin/control.sh --close; $HOME/.config/offsec/bin/powermenu.sh &" "⏻")))))
+                :onclick "$HOME/.config/rice/bin/control.sh --close; $HOME/.config/rice/bin/powermenu.sh &" "⏻")))))
 
 (defwidget cc_tiles []
   (box :class "qs-grid" :orientation "v" :space-evenly false :spacing 8
@@ -177,47 +177,47 @@
       (qs_tile :icon {wifi_state == "on" ? "󰖩" : "󰖪"}
                :title "Wi-Fi" :subtitle "${wifi_name}"
                :active {wifi_state == "on"}
-               :onclick "$HOME/.config/offsec/bin/network.sh --wifi-toggle")
+               :onclick "$HOME/.config/rice/bin/network.sh --wifi-toggle")
       (qs_tile :icon {dnd == "dnd" ? "󰂛" : "󰂚"}
                :title "Do not disturb" :subtitle {dnd == "dnd" ? "muted" : "enabled"}
                :active {dnd == "dnd"}
-               :onclick "$HOME/.config/offsec/bin/notifications.sh --dnd"))
+               :onclick "$HOME/.config/rice/bin/notifications.sh --dnd"))
     (box :orientation "h" :space-evenly true :spacing 8
       (qs_tile :icon {power_profile == "performance" ? "󰓅" : (power_profile == "power" ? "󰌪" : "󰾅")}
                :title "Power"
                :subtitle {power_writable == "1" ? power_label : "${power_label} (read only)"}
                :active {power_profile == "performance"}
-               :onclick "$HOME/.config/offsec/bin/powerprofile.sh --cycle")
+               :onclick "$HOME/.config/rice/bin/powerprofile.sh --cycle")
       (qs_tile :icon {caffeine == "on" ? "󰅶" : "󰛊"}
                :title "Keep awake" :subtitle {caffeine == "on" ? "Screen stays on" : "Normal locking"}
                :active {caffeine == "on"}
-               :onclick "$HOME/.config/offsec/bin/caffeine.sh --toggle"))
+               :onclick "$HOME/.config/rice/bin/caffeine.sh --toggle"))
     (box :orientation "h" :space-evenly true :spacing 8
       (qs_tile :icon "󰖂" :title "VPN" :subtitle "${vpn}"
                :active {vpn != "off"}
-               :onclick "$HOME/.config/offsec/bin/vpn.sh --menu &")
+               :onclick "$HOME/.config/rice/bin/vpn.sh --menu &")
       (qs_tile :icon "󰯃" :title "Proxy" :subtitle "Burp · ZAP"
                :active false
-               :onclick "$HOME/.config/offsec/bin/proxy.sh --menu &"))
+               :onclick "$HOME/.config/rice/bin/proxy.sh --menu &"))
     (box :orientation "h" :space-evenly true :spacing 8
       (qs_tile :icon "󰄄" :title "Screenshot" :subtitle "Area / screen"
                :active false
-               :onclick "$HOME/.config/offsec/bin/control.sh --close; $HOME/.config/offsec/bin/screenshot.sh --area &")
+               :onclick "$HOME/.config/rice/bin/control.sh --close; $HOME/.config/rice/bin/screenshot.sh --area &")
       (qs_tile :icon "󰏘" :title "Theme" :subtitle "appearance"
                :active false
-               :onclick "$HOME/.config/offsec/bin/theme.sh --menu &"))))
+               :onclick "$HOME/.config/rice/bin/theme.sh --menu &"))))
 
 (defwidget cc_sliders []
   (box :class "cc-section" :orientation "v" :space-evenly false :spacing 10
     (label :class "cc-section-title" :text "SOUND" :halign "start")
     (box :orientation "h" :space-evenly false :spacing 12
       (button :class "cc-slider-icon" :tooltip "muted"
-              :onclick "$HOME/.config/offsec/bin/volume.sh --toggle" "󰕾")
+              :onclick "$HOME/.config/rice/bin/volume.sh --toggle" "󰕾")
       (scale :class "cc-scale" :hexpand true :value volume :min 0 :max 101
-             :onchange "$HOME/.config/offsec/bin/volume.sh --set {}")
+             :onchange "$HOME/.config/rice/bin/volume.sh --set {}")
       (label :class "cc-slider-value" :text "${volume}%"))
     (box :orientation "h" :space-evenly true :spacing 8
-      (button :class "cc-chip" :onclick "$HOME/.config/offsec/bin/volume.sh --mic-toggle" "󰍬  microphone")
+      (button :class "cc-chip" :onclick "$HOME/.config/rice/bin/volume.sh --mic-toggle" "󰍬  microphone")
       (button :class "cc-chip" :onclick "pavucontrol &" "󰙪  mixer"))))
 
 (defwidget cc_engagement []
@@ -234,8 +234,8 @@
       (label :class "cc-kv-icon" :text "󰈀")
       (label :class "cc-kv-text" :halign "start" :hexpand true :limit-width 30 :text net_label))
     (box :orientation "h" :space-evenly true :spacing 8
-      (button :class "cc-chip" :onclick "$HOME/.config/offsec/bin/engagement.sh --menu &" "󰸄  open")
-      (button :class "cc-chip" :onclick "$HOME/.config/offsec/bin/target.sh --menu &" "󰓾  target"))))
+      (button :class "cc-chip" :onclick "$HOME/.config/rice/bin/engagement.sh --menu &" "󰸄  open")
+      (button :class "cc-chip" :onclick "$HOME/.config/rice/bin/target.sh --menu &" "󰓾  target"))))
 
 (defwidget cc_calendar []
   (box :class "cc-section" :orientation "v" :space-evenly false :spacing 6
@@ -248,7 +248,7 @@
       (label :class "cc-section-title" :text "NOTIFICATIONS" :halign "start" :hexpand true)
       (label :class "cc-badge" :text notif_count :visible {notif_count != "0"})
       (button :class "cc-mini" :tooltip "Clear all"
-              :onclick "$HOME/.config/offsec/bin/notifications.sh --clear" "󰆴"))
+              :onclick "$HOME/.config/rice/bin/notifications.sh --clear" "󰆴"))
     (box :class "notif-list" :orientation "v" :space-evenly false :spacing 6
         (for n in notifications
           (box :class "notif ${n.urgency}" :orientation "v" :space-evenly false :spacing 2
@@ -298,7 +298,7 @@
 ;; so clicks on the portrait monitor also dismiss the popup.
 (defwidget cc_backdrop_area []
   (eventbox :class "cc-backdrop" :hexpand true :vexpand true
-            :onclick "$HOME/.config/offsec/bin/panel.sh close &"
+            :onclick "$HOME/.config/rice/bin/panel.sh close &"
     (box :hexpand true :vexpand true)))
 
 (defwindow cc_backdrop
@@ -320,7 +320,7 @@
 ;; MPRIS emits on metadata/status changes; the one-second clock lives only
 ;; while this window is mapped. Metadata remains data, never shell arguments.
 (deflisten media_state :initial '{"available":false,"title":"Nothing playing","artist":"Play a song or video","album":"","player":"","playing":false,"art":"","has_art":false,"progress":0,"elapsed":"0:00","duration":"0:00","can_seek":false,"can_play":false,"can_previous":false,"can_next":false,"volume":0,"muted":false}'
-  "exec /usr/bin/python $HOME/.config/offsec/bin/media-state.py watch")
+  "exec /usr/bin/python $HOME/.config/rice/bin/media-state.py watch")
 
 (defwidget media_center []
   (box :class "media-root" :orientation "v" :space-evenly false
@@ -329,10 +329,10 @@
       (box :orientation "h" :space-evenly false :spacing 8
         (label :class "cc-section-title" :text "NOW PLAYING" :hexpand true :halign "start")
         (button :class "media-source" :tooltip "Switch between available players"
-                :timeout "2s" :onclick "$HOME/.config/offsec/bin/media.sh cycle"
+                :timeout "2s" :onclick "$HOME/.config/rice/bin/media.sh cycle"
                 {media_state.available ? media_state.player : "MPRIS"})
         (button :class "cc-mini" :tooltip "Close (Esc)"
-                :timeout "2s" :onclick "$HOME/.config/offsec/bin/media.sh --close &" "󰅖"))
+                :timeout "2s" :onclick "$HOME/.config/rice/bin/media.sh --close &" "󰅖"))
       (box :orientation "h" :space-evenly false :spacing 22
         (box :class "media-cover" :width 150 :height 150
           (image :path {media_state.art}
@@ -343,25 +343,25 @@
           (label :class "media-album" :text {media_state.album} :limit-width 32 :halign "start" :truncate true)
           (box :class "media-transport" :orientation "h" :space-evenly false :spacing 15 :halign "start"
             (button :class "media-skip" :active {media_state.can_previous} :tooltip "Previous"
-                    :timeout "2s" :onclick "$HOME/.config/offsec/bin/media.sh previous" "󰒮")
+                    :timeout "2s" :onclick "$HOME/.config/rice/bin/media.sh previous" "󰒮")
             (button :class "media-play" :active {media_state.can_play} :tooltip "Play / pause"
-                    :timeout "2s" :onclick "$HOME/.config/offsec/bin/media.sh play-pause"
+                    :timeout "2s" :onclick "$HOME/.config/rice/bin/media.sh play-pause"
                     {media_state.playing ? "󰏤" : "󰐊"})
             (button :class "media-skip" :active {media_state.can_next} :tooltip "Next"
-                    :timeout "2s" :onclick "$HOME/.config/offsec/bin/media.sh next" "󰒭"))))
+                    :timeout "2s" :onclick "$HOME/.config/rice/bin/media.sh next" "󰒭"))))
       (box :orientation "v" :space-evenly false :spacing 5
         (scale :class "cc-scale media-progress" :hexpand true :min 0 :max 100
                :value {media_state.progress} :active {media_state.can_seek}
-               :timeout "2s" :onchange "$HOME/.config/offsec/bin/media.sh seek {}")
+               :timeout "2s" :onchange "$HOME/.config/rice/bin/media.sh seek {}")
         (box :orientation "h" :space-evenly false
           (label :class "media-time" :text {media_state.elapsed} :halign "start" :hexpand true)
           (label :class "media-time" :text {media_state.duration} :halign "end")))
       (box :class "media-volume" :orientation "h" :space-evenly false :spacing 12
         (button :class "cc-slider-icon" :tooltip "Toggle mute"
-                :onclick "$HOME/.config/offsec/bin/volume.sh --toggle"
+                :onclick "$HOME/.config/rice/bin/volume.sh --toggle"
                 {media_state.muted ? "󰝟" : "󰕾"})
         (scale :class "cc-scale" :hexpand true :min 0 :max 100 :value {media_state.volume}
-               :onchange "$HOME/.config/offsec/bin/volume.sh --set {}")
+               :onchange "$HOME/.config/rice/bin/volume.sh --set {}")
         (label :class "cc-slider-value" :text "${media_state.volume}%")))))
 
 (defwindow media

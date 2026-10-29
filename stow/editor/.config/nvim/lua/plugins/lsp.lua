@@ -112,7 +112,7 @@ return {
       })
 
       vim.api.nvim_create_autocmd("LspAttach", {
-        group = vim.api.nvim_create_augroup("offsec_lsp", { clear = true }),
+        group = vim.api.nvim_create_augroup("rice_lsp", { clear = true }),
         callback = function(event)
           local function map(keys, func, desc, mode)
             vim.keymap.set(mode or "n", keys, func, { buffer = event.buf, desc = "lsp: " .. desc })
@@ -137,7 +137,7 @@ return {
           end
 
           if client and client:supports_method("textDocument/documentHighlight") then
-            local group = vim.api.nvim_create_augroup("offsec_lsp_highlight", { clear = false })
+            local group = vim.api.nvim_create_augroup("rice_lsp_highlight", { clear = false })
             vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
               buffer = event.buf,
               group = group,

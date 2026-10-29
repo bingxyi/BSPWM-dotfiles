@@ -1,4 +1,4 @@
-# BSPWM-dotfiles :: sxhkdrc
+# rice :: sxhkdrc
 # Desktop keyboard shortcuts. Super is the modifier; hjkl moves focus.
 # Super+Shift moves windows. Super+/ opens this cheatsheet.
 
@@ -13,15 +13,15 @@ super + shift + r
 
 # Session and power menu
 super + x
-	~/.config/offsec/bin/powermenu.sh
+	~/.config/rice/bin/powermenu.sh
 
 # Lock screen
 super + shift + x
-	~/.config/offsec/bin/lock.sh
+	~/.config/rice/bin/lock.sh
 
 # Keyboard shortcuts
 super + slash
-	~/.config/offsec/bin/cheatsheet.sh
+	~/.config/rice/bin/cheatsheet.sh
 
 ## launchers
 # Terminal
@@ -34,19 +34,19 @@ super + shift + Return
 
 # Terminal in the active engagement directory
 super + ctrl + Return
-	~/.config/offsec/bin/engagement.sh --terminal
+	~/.config/rice/bin/engagement.sh --terminal
 
 # Application launcher
 super + d
-	~/.config/offsec/bin/launcher.sh
+	~/.config/rice/bin/launcher.sh
 
 # Run command
 super + shift + d
-	rofi -show run -theme ~/.config/rofi/themes/offsec.rasi
+	rofi -show run -theme ~/.config/rofi/themes/rice.rasi
 
 # Open windows
 super + Tab
-	rofi -show window -theme ~/.config/rofi/themes/offsec.rasi
+	rofi -show window -theme ~/.config/rofi/themes/rice.rasi
 
 # File manager (TUI and GUI)
 super + e
@@ -65,49 +65,49 @@ super + b
 
 # Clipboard history
 super + v
-	~/.config/offsec/bin/clipboard.sh
+	~/.config/rice/bin/clipboard.sh
 
 # Emoji / glyphs
 super + alt + period
-	~/.config/offsec/bin/emoji.sh
+	~/.config/rice/bin/emoji.sh
 
 ## Appearance and session
 # Switch theme
 super + t
-	~/.config/offsec/bin/theme.sh --menu
+	~/.config/rice/bin/theme.sh --menu
 
 # Switch wallpaper
 super + w
-	~/.config/offsec/bin/wallpaper.sh --menu
+	~/.config/rice/bin/wallpaper.sh --menu
 
 # Switch bar profile (nyx <-> vesper)
 super + shift + p
-	~/.config/offsec/bin/profile.sh --menu
+	~/.config/rice/bin/profile.sh --menu
 
 # Notification center
 super + alt + n
-	~/.config/offsec/bin/notifications.sh --toggle
+	~/.config/rice/bin/notifications.sh --toggle
 
 # Control center: Wi-Fi, Do not disturb, power, caffeine, sound,
 # engagement, calendar and notifications on the primary monitor
 super + {c,shift + n}
-	~/.config/offsec/bin/control.sh --toggle
+	~/.config/rice/bin/control.sh --toggle
 
 # Media center
 super + ctrl + m
-	~/.config/offsec/bin/media.sh --toggle
+	~/.config/rice/bin/media.sh --toggle
 
 # Security tools panel (rofi)
 super + shift + c
-	~/.config/offsec/bin/offsec-menu.sh
+	~/.config/rice/bin/rice-menu.sh
 
 # Keep awake: prevent automatic locking and screen blanking
 super + ctrl + c
-	~/.config/offsec/bin/caffeine.sh --toggle
+	~/.config/rice/bin/caffeine.sh --toggle
 
 # Cycle CPU power profile
 super + ctrl + p
-	~/.config/offsec/bin/powerprofile.sh --cycle
+	~/.config/rice/bin/powerprofile.sh --cycle
 
 # Close current notification
 super + ctrl + n
@@ -116,44 +116,44 @@ super + ctrl + n
 ## appsec (GUI)
 # Security tools: proxy, target, engagement, screenshot
 super + o
-	~/.config/offsec/bin/offsec-menu.sh
+	~/.config/rice/bin/rice-menu.sh
 
 # Active target (sets TARGET and updates the bar)
 super + shift + o
-	~/.config/offsec/bin/target.sh --menu
+	~/.config/rice/bin/target.sh --menu
 
 # Lab VPN (tun0)
 super + shift + v
-	~/.config/offsec/bin/vpn.sh --menu
+	~/.config/rice/bin/vpn.sh --menu
 
 # Burp Suite
 super + shift + b
-	~/.config/offsec/bin/proxy.sh --burp
+	~/.config/rice/bin/proxy.sh --burp
 
 # Quick note in the active engagement
 super + shift + m
-	~/.config/offsec/bin/engagement.sh --note
+	~/.config/rice/bin/engagement.sh --note
 
 ## screenshots
 # Select and annotate an area; Enter saves and copies, Escape cancels
 Print
-	~/.config/offsec/bin/screenshot.sh --area
+	~/.config/rice/bin/screenshot.sh --area
 
 # Full screen
 shift + Print
-	~/.config/offsec/bin/screenshot.sh --full
+	~/.config/rice/bin/screenshot.sh --full
 
 # Active window
 ctrl + Print
-	~/.config/offsec/bin/screenshot.sh --window
+	~/.config/rice/bin/screenshot.sh --window
 
 # Toggle screen recording
 super + Print
-	~/.config/offsec/bin/screenshot.sh --record
+	~/.config/rice/bin/screenshot.sh --record
 
 # Alternative area screenshot shortcut
 super + shift + s
-	~/.config/offsec/bin/screenshot.sh --area
+	~/.config/rice/bin/screenshot.sh --area
 
 ## windows
 # Close / kill
@@ -215,7 +215,7 @@ super + shift + equal
 
 # Resize toward the arrow (hold to repeat)
 super + alt + {h,j,k,l,Left,Down,Up,Right}
-	~/.config/offsec/bin/resize.sh {west,south,north,east,west,south,north,east} 40
+	~/.config/rice/bin/resize.sh {west,south,north,east,west,south,north,east} 40
 
 # Preselection
 super + ctrl + {h,j,k,l}
@@ -230,10 +230,10 @@ super + {bracketleft,bracketright}
 
 ## workspaces
 super + {1,2,3,4,5,6,7,8,9,0}
-	~/.config/offsec/bin/workspace.sh --focus {1,2,3,4,5,6,7,8,9,10}
+	~/.config/rice/bin/workspace.sh --focus {1,2,3,4,5,6,7,8,9,10}
 
 super + shift + {1,2,3,4,5,6,7,8,9,0}
-	~/.config/offsec/bin/workspace.sh --send {1,2,3,4,5,6,7,8,9,10}
+	~/.config/rice/bin/workspace.sh --send {1,2,3,4,5,6,7,8,9,10}
 
 # Switch desktops on this monitor
 super + ctrl + {comma,period}
@@ -248,20 +248,20 @@ super + shift + {comma,period}
 
 ## hardware
 XF86Audio{RaiseVolume,LowerVolume}
-	~/.config/offsec/bin/volume.sh {--up,--down}
+	~/.config/rice/bin/volume.sh {--up,--down}
 
 XF86AudioMute
-	~/.config/offsec/bin/volume.sh --toggle
+	~/.config/rice/bin/volume.sh --toggle
 
 XF86AudioMicMute
-	~/.config/offsec/bin/volume.sh --mic-toggle
+	~/.config/rice/bin/volume.sh --mic-toggle
 
 XF86Audio{Play,Prev,Next}
 	playerctl {play-pause,previous,next}
 
 XF86MonBrightness{Up,Down}
-	~/.config/offsec/bin/brightness.sh {--up,--down}
+	~/.config/rice/bin/brightness.sh {--up,--down}
 
 # Persistent mouse preferences
 super + alt + m
-	~/.config/offsec/bin/mouse-settings.py
+	~/.config/rice/bin/mouse-settings.py

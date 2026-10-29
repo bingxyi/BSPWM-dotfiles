@@ -1,4 +1,4 @@
-# BSPWM-dotfiles audit · 2026-10-29
+# rice audit · 2026-10-29
 
 This document records the original implementation audit. The evidence and
 environment limitations below describe that audit run, rather than a guarantee
@@ -48,7 +48,7 @@ about every host where this rice may be installed.
   mode, invalid modes, concurrent bar startup, i3lock colors, and rendering
   without X11. External services and RandR were mocked in those tests.
 - `.gitignore` was checked against `.env`, keys, AWS credentials, history, swap
-  files, temporary files, and the login avatar. Public `offsec/env` and defaults
+  files, temporary files, and the login avatar. Public `rice/env` and defaults
   remain tracked.
 - `install.sh --dry-run` produced a plan for the current home without modifying it.
 
@@ -75,14 +75,14 @@ about every host where this rice may be installed.
 ## Host activation and verification
 
 ```sh
-cd ~/BSPWM-dotfiles
+cd ~/rice
 sudo pacman -S --needed stow shellcheck
 python3 scripts/check.py
 python3 -m unittest discover -s tests -v
 ./install.sh --dry-run
 ./install.sh
 systemctl --user daemon-reload
-systemctl --user enable --now offsec-notification-retention.service
+systemctl --user enable --now rice-notification-retention.service
 # Review the backup and finish work affected by layout changes before reloading.
 bspc wm -r
 # Super+Escape reloads sxhkd.
@@ -91,5 +91,5 @@ bspc wm --dump-state
 xrandr --query
 ```
 
-The installer prints the backup path and the exact restore command. Its internal
-state directory remains `~/.local/state/offsec-dotfiles/` for compatibility.
+The installer prints the backup path and the exact restore command. The published
+installer stores its state under `~/.local/state/rice/`.

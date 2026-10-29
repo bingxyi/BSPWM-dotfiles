@@ -24,9 +24,9 @@ export XDG_CACHE_HOME="$HOME/.cache"
 # Add custom scripts to PATH.
 export PATH="$HOME/.local/bin:$PATH"
 
-# >>> BSPWM-dotfiles >>>
-# Managed by install.sh; edit ~/.config/offsec/env instead.
-if [ -r "$HOME/.config/offsec/env" ]; then
-    . "$HOME/.config/offsec/env"
+# >>> rice >>>
+# Managed by install.sh; edit ~/.config/rice/env instead.
+if [ -r "$HOME/.config/rice/env" ]; then
+    . "$HOME/.config/rice/env"
 fi
-# <<< BSPWM-dotfiles <<<
+# <<< rice <<<

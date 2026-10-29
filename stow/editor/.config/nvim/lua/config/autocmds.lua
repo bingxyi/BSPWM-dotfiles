@@ -1,4 +1,4 @@
-local augroup = vim.api.nvim_create_augroup("offsec", { clear = true })
+local augroup = vim.api.nvim_create_augroup("rice", { clear = true })
 
 -- Highlight copied text.
 vim.api.nvim_create_autocmd("TextYankPost", {

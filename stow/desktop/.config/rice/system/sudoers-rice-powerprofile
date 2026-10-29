@@ -1,0 +1,7 @@
+# rice :: passwordless power profile commands with fixed arguments
+# Install: sudo install -Dm440 ~/.config/rice/system/sudoers-rice-powerprofile /etc/sudoers.d/rice-powerprofile
+# Allow only these three exact commands. No wildcards or caller-selected
+# paths are accepted, preventing arbitrary file writes.
+@USER@ ALL=(root) NOPASSWD: /usr/local/bin/rice-powerprofile performance
+@USER@ ALL=(root) NOPASSWD: /usr/local/bin/rice-powerprofile balanced
+@USER@ ALL=(root) NOPASSWD: /usr/local/bin/rice-powerprofile power

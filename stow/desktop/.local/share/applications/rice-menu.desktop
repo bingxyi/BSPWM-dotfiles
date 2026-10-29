@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Security Panel
+Comment=Engagement, target, proxy, VPN, reconnaissance and evidence capture
+Exec=/bin/bash -c "$HOME/.config/rice/bin/rice-menu.sh"
+Icon=security-high
+Terminal=false
+Categories=System;Security;
+Keywords=rice;pentest;appsec;

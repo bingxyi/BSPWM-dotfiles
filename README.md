@@ -1,4 +1,4 @@
-# BSPWM-dotfiles · bspwm rice
+# rice
 
 An Arch Linux bspwm rice with two sidebar profiles, shared color palettes, and
 an application security workflow. Built with sxhkd, picom, rofi, Kitty, Zsh,
@@ -42,8 +42,8 @@ Clone the repository to a permanent location: installed static files link back
 to this checkout.
 
 ```sh
-git clone https://github.com/bingxyi/BSPWM-dotfiles.git ~/BSPWM-dotfiles
-cd ~/BSPWM-dotfiles
+git clone https://github.com/bingxyi/BSPWM-dotfiles.git ~/rice
+cd ~/rice
 sudo pacman -S --needed git stow python
 ./install.sh --dry-run
 ./install.sh
@@ -55,7 +55,7 @@ display manager, or use `startx` with the installed `.xinitrc`.
 The installer deploys the desktop, shell, and editor packages with GNU Stow's
 `--no-folding` option, keeping unrelated files in shared directories. It backs up
 conflicts, including broken symlinks, under
-`~/.local/state/offsec-dotfiles/backups/` and prints the exact restore command.
+`~/.local/state/rice/backups/` and prints the exact restore command.
 Failed deployments roll back managed files. Later restoration refuses to
 overwrite files changed since installation.
 
@@ -66,31 +66,31 @@ overwrite files changed since installation.
 
 Palette-generated files are regular files recreated with backups during
 installation. Existing personal settings for the selected theme, profile, and
-mouse are preserved. The internal configuration directory remains
-`~/.config/offsec/`.
+mouse under the `rice` namespace are preserved. The published configuration uses
+`~/.config/rice/`. Existing installations are not migrated automatically.
 
 ## Everyday use
 
 Open the theme and profile menus from a terminal:
 
 ```sh
-~/.config/offsec/bin/theme.sh --menu
-~/.config/offsec/bin/profile.sh --menu
+~/.config/rice/bin/theme.sh --menu
+~/.config/rice/bin/profile.sh --menu
 ```
 
 Nyx is the initial profile. Switch to Vesper for the Eww sidebar, or select a
 profile directly:
 
 ```sh
-~/.config/offsec/bin/profile.sh --set vesper
-~/.config/offsec/bin/profile.sh --set nyx
+~/.config/rice/bin/profile.sh --set vesper
+~/.config/rice/bin/profile.sh --set nyx
 ```
 
 Enable the optional user service for notification retention:
 
 ```sh
 systemctl --user daemon-reload
-systemctl --user enable --now offsec-notification-retention.service
+systemctl --user enable --now rice-notification-retention.service
 ```
 
 ### Keyboard shortcuts
@@ -114,9 +114,9 @@ systemctl --user enable --now offsec-notification-retention.service
 
 ### Themes, monitors, and personal files
 
-Edit palettes in `stow/desktop/.config/offsec/themes/` and generated-file sources
-in `stow/desktop/.config/offsec/templates/`. Session variables live in
-`stow/desktop/.config/offsec/env`.
+Edit palettes in `stow/desktop/.config/rice/themes/` and generated-file sources
+in `stow/desktop/.config/rice/templates/`. Session variables live in
+`stow/desktop/.config/rice/env`.
 
 For monitor overrides, inspect your outputs and copy the example:
 
@@ -140,7 +140,7 @@ in `~/Burpsuite-Professional`. This repository does not distribute a JAR or lice
 With a configured remote and upstream branch, run:
 
 ```sh
-cd ~/BSPWM-dotfiles
+cd ~/rice
 ./sync.sh
 ```
 
@@ -156,11 +156,11 @@ alive, so its updated configuration takes effect at the next login.
 ## Optional system integration
 
 SDDM, system editor, power, and performance helpers are installed under
-`~/.config/offsec/system/`. Review the relevant script before running it
+`~/.config/rice/system/`. Review the relevant script before running it
 separately with `sudo`. The main dotfile installer does not invoke these helpers,
 restart system services, or change boot settings.
 
-A custom login avatar can be placed at `~/.config/offsec/login/avatar.png`;
+A custom login avatar can be placed at `~/.config/rice/login/avatar.png`;
 it is excluded from Git. The bundled SilentSDDM sources retain their upstream
 documentation, attribution, and licenses in
-`stow/desktop/.config/offsec/login/silent-offsec/`.
+`stow/desktop/.config/rice/login/silent-rice/`.

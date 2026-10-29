@@ -1,7 +1,0 @@
-# BSPWM-dotfiles :: passwordless power profile commands with fixed arguments
-# Install: sudo install -Dm440 ~/.config/offsec/system/sudoers-offsec-powerprofile /etc/sudoers.d/offsec-powerprofile
-# Allow only these three exact commands. No wildcards or caller-selected
-# paths are accepted, preventing arbitrary file writes.
-@USER@ ALL=(root) NOPASSWD: /usr/local/bin/offsec-powerprofile performance
-@USER@ ALL=(root) NOPASSWD: /usr/local/bin/offsec-powerprofile balanced
-@USER@ ALL=(root) NOPASSWD: /usr/local/bin/offsec-powerprofile power

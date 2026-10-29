@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# BSPWM-dotfiles :: bspwmrc
+# rice :: bspwmrc
 # This file never writes to monitors.sh.
 # If ~/.config/bspwm/monitors.sh exists, it owns monitor geometry and desktops.
 
 CONFIG_DIR="$HOME/.config"
-OFFSEC_DIR="$CONFIG_DIR/offsec"
+RICE_DIR="$CONFIG_DIR/rice"
 
 function main() {
     load_env
@@ -20,19 +20,19 @@ function main() {
 
 function load_env() {
     # Shared environment with .xprofile (idempotent: it may already be exported).
-    if [ -r "$OFFSEC_DIR/env" ]; then
+    if [ -r "$RICE_DIR/env" ]; then
         # shellcheck disable=SC1091
-        . "$OFFSEC_DIR/env"
+        . "$RICE_DIR/env"
     fi
 
     PROFILE="nyx"
-    if [ -r "$OFFSEC_DIR/profile" ]; then
-        IFS= read -r PROFILE < "$OFFSEC_DIR/profile" || :
+    if [ -r "$RICE_DIR/profile" ]; then
+        IFS= read -r PROFILE < "$RICE_DIR/profile" || :
     fi
 
     case "$PROFILE" in
-    vesper) BAR_WIDTH="${OFFSEC_BAR_WIDTH:-54}" ;;
-    *) BAR_WIDTH="${OFFSEC_BAR_WIDTH:-46}" ;;
+    vesper) BAR_WIDTH="${RICE_BAR_WIDTH:-54}" ;;
+    *) BAR_WIDTH="${RICE_BAR_WIDTH:-46}" ;;
     esac
 }
 
@@ -47,7 +47,7 @@ function setup_monitors() {
     # Resolve the bar monitor after monitors.sh sets the RandR primary output.
     # Resolving it earlier could use the previous boot's primary, or no primary,
     # and place the bar on the portrait monitor.
-    "$OFFSEC_DIR/bin/monitor-sync.py" || return 1
+    "$RICE_DIR/bin/monitor-sync.py" || return 1
     resolve_bar_monitor
     order_monitors
 
@@ -74,10 +74,10 @@ function order_monitors() {
 }
 
 # Place the bar on the explicitly selected monitor, then the RandR primary.
-# An invalid name (disconnected output or incorrect OFFSEC_BAR_MONITOR)
+# An invalid name (disconnected output or incorrect RICE_BAR_MONITOR)
 # would leave every monitor without bar padding, so fall back to a valid output.
 function resolve_bar_monitor() {
-    BAR_MONITOR="${OFFSEC_BAR_MONITOR:-}"
+    BAR_MONITOR="${RICE_BAR_MONITOR:-}"
     if [ -z "$BAR_MONITOR" ]; then
         BAR_MONITOR=$(xrandr --query | awk '/ connected primary/ {print $1; exit}')
     fi
@@ -167,7 +167,7 @@ function setup_rules() {
     bspc rule -r '*'
 
     # Float and center utility windows.
-    bspc rule -a OffsecMouse state=floating center=on
+    bspc rule -a RiceMouse state=floating center=on
     bspc rule -a Pavucontrol state=floating center=on rectangle=900x600+0+0
     bspc rule -a Blueman-manager state=floating center=on
     bspc rule -a Lxappearance state=floating center=on
@@ -201,7 +201,7 @@ function setup_rules() {
 function start_services() {
     run_once sxhkd
     run_once xsettingsd
-    run_once "$CONFIG_DIR/offsec/bin/picom-launch.sh"
+    run_once "$CONFIG_DIR/rice/bin/picom-launch.sh"
     run_once dunst
     run_once greenclip daemon
     run_once nm-applet --indicator
@@ -209,15 +209,15 @@ function start_services() {
     start_polkit_agent
 
     # Restore persistent panel preferences after starting session services.
-    "$OFFSEC_DIR/bin/session-restore.sh" &
-    mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/offsec"
-    "$OFFSEC_DIR/bin/mouse-settings.py" --watch >>"${XDG_DATA_HOME:-$HOME/.local/share}/offsec/mouse.log" 2>&1 &
+    "$RICE_DIR/bin/session-restore.sh" &
+    mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/rice"
+    "$RICE_DIR/bin/mouse-settings.py" --watch >>"${XDG_DATA_HOME:-$HOME/.local/share}/rice/mouse.log" 2>&1 &
 
     # Wallpaper saved by wallpaper.sh.
-    "$OFFSEC_DIR/bin/wallpaper.sh" --restore &
+    "$RICE_DIR/bin/wallpaper.sh" --restore &
 
     # Active profile bar (nyx = tint2, vesper = eww).
-    "$OFFSEC_DIR/bin/bar.sh" --restart &
+    "$RICE_DIR/bin/bar.sh" --restart &
 
     # Keep the Eww daemon ready: both profiles use it for the control center
     # (Super+C). Starting it here avoids a delay on the first toggle.
@@ -227,8 +227,8 @@ function start_services() {
     fi
 
     # Also apply the keyboard settings inside the session.
-    # Model and layout come from ~/.config/offsec/env; the default is ABNT2.
-    setxkbmap -model "${OFFSEC_KB_MODEL:-abnt2}" -layout "${OFFSEC_KB_LAYOUT:-br}" &
+    # Model and layout come from ~/.config/rice/env; the default is ABNT2.
+    setxkbmap -model "${RICE_KB_MODEL:-abnt2}" -layout "${RICE_KB_LAYOUT:-br}" &
     xsetroot -cursor_name left_ptr &
 
     # Optional, untracked machine hook for laptops, docks, or VMs.
@@ -259,7 +259,7 @@ function run_once() {
 }
 
 function theme_value() {
-    local key="$1" fallback="$2" file="$OFFSEC_DIR/current-theme.conf" value=""
+    local key="$1" fallback="$2" file="$RICE_DIR/current-theme.conf" value=""
     if [ -r "$file" ]; then
         value=$(awk -F= -v k="$key" '$1==k {print $2; exit}' "$file")
     fi

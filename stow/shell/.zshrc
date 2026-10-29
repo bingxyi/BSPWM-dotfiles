@@ -1,7 +1,7 @@
-# BSPWM-dotfiles :: zsh
-# Shared X11 and shell environment from ~/.config/offsec/env.
+# rice :: zsh
+# Shared X11 and shell environment from ~/.config/rice/env.
 
-[ -r "$HOME/.config/offsec/env" ] && source "$HOME/.config/offsec/env"
+[ -r "$HOME/.config/rice/env" ] && source "$HOME/.config/rice/env"
 
 #: --------------------------------------------------------------- history
 HISTFILE="$XDG_STATE_HOME/zsh/history"
@@ -75,7 +75,7 @@ alias ports='ss -tulpn'
 alias myip='curl -s ifconfig.me; echo'
 alias tunip='ip -4 -o addr show tun0 2>/dev/null | awk "{print \$4}" | cut -d/ -f1'
 
-#: ------------------------------------------------------------ offsec shortcuts
+#: ------------------------------------------------------------ rice shortcuts
 alias eng='engagement.sh'
 alias tgt='target.sh'
 alias px='proxy.sh'
@@ -86,7 +86,7 @@ alias theme='theme.sh'
 # Change to the active engagement directory.
 function cde() {
     local engagement_path
-    engagement_path=$(cat "$XDG_DATA_HOME/offsec/engagement" 2>/dev/null)
+    engagement_path=$(cat "$XDG_DATA_HOME/rice/engagement" 2>/dev/null)
     if [ -z "$engagement_path" ] || [ ! -d "$engagement_path" ]; then
         echo "No active engagement (use: eng --new)" >&2
         return 1
@@ -97,13 +97,13 @@ function cde() {
 # $TARGET is always available in the shell.
 function target() {
     if [ $# -eq 0 ]; then
-        cat "$XDG_DATA_HOME/offsec/target" 2>/dev/null
+        cat "$XDG_DATA_HOME/rice/target" 2>/dev/null
         return 0
     fi
     target.sh --set "$1"
     export TARGET="$1"
 }
-export TARGET="$(cat "$XDG_DATA_HOME/offsec/target" 2>/dev/null)"
+export TARGET="$(cat "$XDG_DATA_HOME/rice/target" 2>/dev/null)"
 
 # Quick HTTP server in the current directory.
 function serve() {

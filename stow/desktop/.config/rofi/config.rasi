@@ -1,4 +1,4 @@
-/* BSPWM-dotfiles :: rofi */
+/* rice :: rofi */
 configuration {
     modes: "drun,run,window,filebrowser";
     font: "JetBrainsMono Nerd Font 11";
@@ -31,4 +31,4 @@ configuration {
     sorting-method: "fzf";
 }
 
-@theme "~/.config/rofi/themes/offsec.rasi"
+@theme "~/.config/rofi/themes/rice.rasi"

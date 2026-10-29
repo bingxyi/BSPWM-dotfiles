@@ -34,8 +34,8 @@ return {
     event = "VeryLazy",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = function()
-      local function offsec_target()
-        local path = vim.env.HOME .. "/.local/share/offsec/target"
+      local function rice_target()
+        local path = vim.env.HOME .. "/.local/share/rice/target"
         local fd = io.open(path, "r")
         if not fd then
           return ""
@@ -63,7 +63,7 @@ return {
             { "filename", path = 1, symbols = { modified = " ●", readonly = " " } },
             { "diagnostics", symbols = { error = " ", warn = " ", info = " ", hint = " " } },
           },
-          lualine_x = { offsec_target, "filetype" },
+          lualine_x = { rice_target, "filetype" },
           lualine_y = { "progress" },
           lualine_z = { { "location", separator = { right = "" }, left_padding = 2 } },
         },
@@ -123,28 +123,23 @@ return {
       local dashboard = require("alpha.themes.dashboard")
 
       dashboard.section.header.val = {
-        [[ ██████╗ ███████╗███████╗███████╗███████╗ ██████╗ ]],
-        [[██╔═══██╗██╔════╝██╔════╝██╔════╝██╔════╝██╔════╝ ]],
-        [[██║   ██║█████╗  █████╗  ███████╗█████╗  ██║      ]],
-        [[██║   ██║██╔══╝  ██╔══╝  ╚════██║██╔══╝  ██║      ]],
-        [[╚██████╔╝██║     ██║     ███████║███████╗╚██████╗ ]],
-        [[ ╚═════╝ ╚═╝     ╚═╝     ╚══════╝╚══════╝ ╚═════╝ ]],
-        [[                                                  ]],
-        [[            a p p s e c   w o r k b e n c h        ]],
+        [[                  r i c e                  ]],
+        [[                                           ]],
+        [[        a p p s e c   w o r k b e n c h    ]],
       }
 
       dashboard.section.buttons.val = {
         dashboard.button("f", "  Find file", "<cmd>Telescope find_files<CR>"),
         dashboard.button("g", "  Find text", "<cmd>Telescope live_grep<CR>"),
         dashboard.button("r", "  Recent files", "<cmd>Telescope oldfiles<CR>"),
-        dashboard.button("e", "  Active engagement", "<cmd>OffsecEngagement<CR>"),
+        dashboard.button("e", "  Active engagement", "<cmd>RiceEngagement<CR>"),
         dashboard.button("n", "  New note", "<cmd>enew<CR>"),
         dashboard.button("c", "  Configuration", "<cmd>e ~/.config/nvim/init.lua<CR>"),
         dashboard.button("l", "󰒲  lazy", "<cmd>Lazy<CR>"),
         dashboard.button("q", "  Quit", "<cmd>qa<CR>"),
       }
 
-      dashboard.section.footer.val = "Theme: " .. (vim.g.offsec_theme or "catppuccin-mocha")
+      dashboard.section.footer.val = "Theme: " .. (vim.g.rice_theme or "catppuccin-mocha")
       dashboard.opts.layout[1].val = 6
       alpha.setup(dashboard.opts)
     end,

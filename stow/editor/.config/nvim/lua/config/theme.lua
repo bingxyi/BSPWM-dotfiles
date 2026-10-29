@@ -1,12 +1,12 @@
 -- Bridge between theme.sh and Neovim.
--- theme.sh writes lua/offsec-theme.lua and triggers :OffsecReloadTheme
+-- theme.sh writes lua/rice-theme.lua and triggers :RiceReloadTheme
 -- in running instances through --remote-send.
 
 local M = {}
 
 local function read_theme()
-  package.loaded["offsec-theme"] = nil
-  local ok, theme = pcall(require, "offsec-theme")
+  package.loaded["rice-theme"] = nil
+  local ok, theme = pcall(require, "rice-theme")
   if ok and type(theme) == "table" and theme.scheme then
     return theme
   end
@@ -20,12 +20,12 @@ function M.apply()
     pcall(vim.cmd.colorscheme, "habamax")
     vim.notify("Theme '" .. theme.scheme .. "' unavailable; using habamax", vim.log.levels.WARN)
   end
-  vim.g.offsec_theme = theme.name
+  vim.g.rice_theme = theme.name
 end
 
 function M.setup()
   M.apply()
-  vim.api.nvim_create_user_command("OffsecReloadTheme", function()
+  vim.api.nvim_create_user_command("RiceReloadTheme", function()
     M.apply()
     pcall(function()
       require("lualine").refresh()

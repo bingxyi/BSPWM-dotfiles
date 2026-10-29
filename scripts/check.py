@@ -39,7 +39,7 @@ def main():
             if result.returncode:
                 errors.append(result.stderr)
         if path.suffix == '.sh' or path.name in ('bspwmrc', '.xinitrc', '.xprofile', '.profile',
-                                                'offsec-powerprofile', 'sddm-Xsetup', 'burpsuite-pro'):
+                                                'rice-powerprofile', 'sddm-Xsetup', 'burpsuite-pro'):
             shell.append(str(path))
             result = subprocess.run(['bash', '-n', str(path)], capture_output=True, text=True)
             if result.returncode:
@@ -66,11 +66,11 @@ def main():
                     errors.append(f'Duplicate hotkey: lines {seen[key]}, {number}: {chord}')
                 seen[key] = number
         for rel in re.findall(r'~/([^\s;]+)', line):
-            if rel.startswith('.config/offsec/bin/'):
+            if rel.startswith('.config/rice/bin/'):
                 path = REPO / 'stow/desktop' / rel
                 if not path.is_file() or not os.access(path, os.X_OK):
                     errors.append(f'Missing/non-executable hotkey script: {rel}')
-    with tempfile.TemporaryDirectory(prefix='offsec-render-', dir='/tmp') as directory:
+    with tempfile.TemporaryDirectory(prefix='rice-render-', dir='/tmp') as directory:
         target = Path(directory)
         shutil.copytree(REPO / 'defaults', target, dirs_exist_ok=True)
         install.render(target)

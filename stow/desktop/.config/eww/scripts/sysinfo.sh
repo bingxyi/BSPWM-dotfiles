@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# BSPWM-dotfiles :: compact metrics for the Vesper bar
+# rice :: compact metrics for the Vesper bar
 
-STATE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/offsec"
+STATE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/rice"
 mkdir -p "$STATE_DIR"
 
 function cpu_usage() {

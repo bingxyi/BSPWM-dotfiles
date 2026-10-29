@@ -46,11 +46,11 @@ stow/**/local.sh
 stow/**/monitors.local.sh
 stow/**/avatar.png
 # Generated, mutable theme files; the sources live in templates/ and defaults/
-stow/desktop/.config/offsec/current-theme.conf
-stow/desktop/.config/offsec/profile
-stow/desktop/.config/offsec/mouse.json
-stow/desktop/.config/offsec/login/silent-offsec/configs/offsec.conf
-stow/desktop/.config/offsec/login/silent-offsec/backgrounds/offsec-wallpaper.png
+stow/desktop/.config/rice/current-theme.conf
+stow/desktop/.config/rice/profile
+stow/desktop/.config/rice/mouse.json
+stow/desktop/.config/rice/login/silent-rice/configs/rice.conf
+stow/desktop/.config/rice/login/silent-rice/backgrounds/rice-wallpaper.png
 stow/desktop/.config/tint2/tint2rc
 stow/desktop/.config/kitty/current-theme.conf
 stow/desktop/.config/rofi/colors.rasi
@@ -58,7 +58,7 @@ stow/desktop/.config/dunst/dunstrc
 stow/desktop/.config/eww/colors.scss
 stow/desktop/.config/gtk-3.0/settings.ini
 stow/desktop/.config/xsettingsd/xsettingsd.conf
-stow/editor/.config/nvim/lua/offsec-theme.lua
+stow/editor/.config/nvim/lua/rice-theme.lua
 
 # GTK bookmarks are personal and remain outside the repository
 stow/**/bookmarks

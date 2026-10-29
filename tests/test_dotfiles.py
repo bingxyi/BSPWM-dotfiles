@@ -19,8 +19,8 @@ class RegressionTests(unittest.TestCase):
     def test_cde_with_valid_engagement(self):
         source = (ROOT / 'stow/shell/.zshrc').read_text()
         function = source[source.index('function cde()'):source.index('# $TARGET')]
-        with tempfile.TemporaryDirectory(prefix='offsec-engagement-') as directory:
-            state = Path(directory) / 'offsec'
+        with tempfile.TemporaryDirectory(prefix='rice-engagement-') as directory:
+            state = Path(directory) / 'rice'
             state.mkdir()
             (state / 'engagement').write_text(directory)
             result = subprocess.run(['zsh', '-f', '-c', function + '\ncde && pwd'],
@@ -30,7 +30,7 @@ class RegressionTests(unittest.TestCase):
             self.assertEqual(result.stdout.strip(), directory)
 
     def monitor_commands(self, query, extra_env=None, fail_first=False):
-        with tempfile.TemporaryDirectory(prefix='offsec-monitors-') as directory:
+        with tempfile.TemporaryDirectory(prefix='rice-monitors-') as directory:
             root = Path(directory)
             (root / 'query').write_text(query)
             stub = root / 'xrandr'
@@ -77,23 +77,23 @@ if os.environ.get('FAIL_FIRST') and not (root/'failed').exists():
         self.assertTrue(all('--off' not in call for call in calls))
 
     def test_shell_environment_is_idempotent(self):
-        envfile = ROOT / 'stow/desktop/.config/offsec/env'
+        envfile = ROOT / 'stow/desktop/.config/rice/env'
         command = '. "$1"; first=$PATH; . "$1"; [[ "$first" == "$PATH" ]]'
         result = subprocess.run(['bash', '-c', command, 'bash', str(envfile)])
         self.assertEqual(result.returncode, 0)
 
     def shell_home(self, directory):
         home = Path(directory)
-        source = ROOT / 'stow/desktop/.config/offsec'
-        shutil.copytree(source / 'bin', home / '.config/offsec/bin')
+        source = ROOT / 'stow/desktop/.config/rice'
+        shutil.copytree(source / 'bin', home / '.config/rice/bin')
         shutil.copytree(ROOT / 'defaults', home, dirs_exist_ok=True)
         return {**os.environ, 'HOME': directory, 'XDG_RUNTIME_DIR': directory,
                 'XDG_DATA_HOME': str(home / '.local/share')}
 
     def test_concurrent_bar_start_is_singleton(self):
-        with tempfile.TemporaryDirectory(prefix='offsec-bar-') as directory:
+        with tempfile.TemporaryDirectory(prefix='rice-bar-') as directory:
             env = self.shell_home(directory)
-            script = '''. "$HOME/.config/offsec/bin/bar.sh"
+            script = '''. "$HOME/.config/rice/bin/bar.sh"
 pgrep() { [[ -e "$HOME/started" ]]; }
 eww() { return 1; }
 start_bar() { sleep 0.05; touch "$HOME/started"; printf 'start\\n' >> "$HOME/count"; }
@@ -105,10 +105,10 @@ main --start
             self.assertEqual((Path(directory) / 'count').read_text().splitlines(), ['start'])
 
     def test_i3lock_fallback_uses_hex_without_hash(self):
-        with tempfile.TemporaryDirectory(prefix='offsec-lock-') as directory:
+        with tempfile.TemporaryDirectory(prefix='rice-lock-') as directory:
             env = self.shell_home(directory)
-            (Path(directory) / '.config/offsec/current-theme.conf').write_text('bg=#1e1e2e\n')
-            script = '''. "$HOME/.config/offsec/bin/lock.sh"
+            (Path(directory) / '.config/rice/current-theme.conf').write_text('bg=#1e1e2e\n')
+            script = '''. "$HOME/.config/rice/bin/lock.sh"
 command() { [[ "$2" != betterlockscreen ]]; }
 i3lock() { printf '%s\\n' "$*"; }
 do_lock
@@ -118,15 +118,15 @@ do_lock
             self.assertEqual(result.stdout.strip(), '-c 1e1e2e --nofork')
 
     def test_render_only_generates_portable_files_without_x11(self):
-        with tempfile.TemporaryDirectory(prefix='offsec-render-') as directory:
+        with tempfile.TemporaryDirectory(prefix='rice-render-') as directory:
             env = self.shell_home(directory)
             home = Path(directory)
-            shutil.copytree(ROOT / 'stow/desktop/.config/offsec/templates',
-                            home / '.config/offsec/templates')
-            shutil.copytree(ROOT / 'stow/desktop/.config/offsec/themes',
-                            home / '.config/offsec/themes')
+            shutil.copytree(ROOT / 'stow/desktop/.config/rice/templates',
+                            home / '.config/rice/templates')
+            shutil.copytree(ROOT / 'stow/desktop/.config/rice/themes',
+                            home / '.config/rice/themes')
             env.pop('DISPLAY', None)
-            result = subprocess.run(['bash', str(home / '.config/offsec/bin/theme.sh'),
+            result = subprocess.run(['bash', str(home / '.config/rice/bin/theme.sh'),
                                      '--render-only', '--apply', 'catppuccin-mocha'],
                                     env=env, capture_output=True, text=True, timeout=5)
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -136,7 +136,7 @@ do_lock
 
 class InstallerTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix='offsec install ')
+        self.temp = tempfile.TemporaryDirectory(prefix='rice install ')
         self.base = Path(self.temp.name)
         self.repo = self.base / 'repo with spaces'
         self.target = self.base / 'home with spaces'
@@ -144,7 +144,7 @@ class InstallerTests(unittest.TestCase):
         for name in installer.PACKAGES:
             (self.repo / 'stow' / name).mkdir(parents=True)
         (self.repo / 'defaults').mkdir()
-        palette = self.repo / 'defaults/.config/offsec/current-theme.conf'
+        palette = self.repo / 'defaults/.config/rice/current-theme.conf'
         palette.parent.mkdir(parents=True)
         palette.write_text('name=fixture\n')
         src = self.repo / 'stow/desktop/.config/demo/config'
@@ -173,7 +173,7 @@ class InstallerTests(unittest.TestCase):
                 path.symlink_to(src)
 
     def backup(self):
-        return sorted((self.target / '.local/state/offsec-dotfiles/backups').iterdir())[-1]
+        return sorted((self.target / '.local/state/rice/backups').iterdir())[-1]
 
     def deploy(self):
         with patch.object(installer.subprocess, 'run', side_effect=self.stow_stub):
@@ -246,14 +246,14 @@ class InstallerTests(unittest.TestCase):
 @unittest.skipUnless(shutil.which('stow'), 'GNU Stow unavailable: real integration not run')
 class RealStowTest(unittest.TestCase):
     def test_full_deploy_and_restore_in_disposable_home(self):
-        with tempfile.TemporaryDirectory(prefix='offsec-real-stow-') as directory:
+        with tempfile.TemporaryDirectory(prefix='rice-real-stow-') as directory:
             target = Path(directory)
             installer.deploy(target)
             for rel, src in installer.sources().items():
                 self.assertTrue((target / rel).is_symlink(), rel)
                 self.assertEqual((target / rel).resolve(), src)
             self.assertNotIn('/home/bingxyi/', (target / '.config/tint2/tint2rc').read_text())
-            backup = next((target / '.local/state/offsec-dotfiles/backups').iterdir())
+            backup = next((target / '.local/state/rice/backups').iterdir())
             installer.restore(backup)
             self.assertFalse((target / '.config/bspwm/bspwmrc').exists())
 

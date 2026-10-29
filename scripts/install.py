@@ -15,14 +15,14 @@ import tempfile
 
 REPO = Path(__file__).resolve().parents[1]
 PACKAGES = ('desktop', 'shell', 'editor')
-INVENTORY = '.local/state/offsec-dotfiles/managed.json'
+INVENTORY = '.local/state/rice/managed.json'
 TEMPLATES = {
     'kitty-colors.conf.tpl': '.config/kitty/current-theme.conf',
     'rofi-colors.rasi.tpl': '.config/rofi/colors.rasi',
     'dunstrc.tpl': '.config/dunst/dunstrc',
     'tint2rc.tpl': '.config/tint2/tint2rc',
     'eww-colors.scss.tpl': '.config/eww/colors.scss',
-    'nvim-theme.lua.tpl': '.config/nvim/lua/offsec-theme.lua',
+    'nvim-theme.lua.tpl': '.config/nvim/lua/rice-theme.lua',
     'gtk-settings.ini.tpl': '.config/gtk-3.0/settings.ini',
     'xsettingsd.conf.tpl': '.config/xsettingsd/xsettingsd.conf',
     'starship.toml.tpl': '.config/starship.toml',
@@ -46,7 +46,7 @@ def fingerprint(path):
 
 def save(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd, name = tempfile.mkstemp(prefix='.offsec-', dir=path.parent)
+    fd, name = tempfile.mkstemp(prefix='.rice-', dir=path.parent)
     try:
         with os.fdopen(fd, 'w') as stream:
             json.dump(data, stream, indent=2)
@@ -80,14 +80,14 @@ def obstructing_parent(target, rel):
 
 def render(target):
     palette = {}
-    for line in (target / '.config/offsec/current-theme.conf').read_text().splitlines():
+    for line in (target / '.config/rice/current-theme.conf').read_text().splitlines():
         if '=' in line and not line.startswith('#'):
             key, value = line.split('=', 1)
             palette[key] = value
             palette[key + '_raw'] = value.removeprefix('#')
     palette['home'] = str(target)
     for template, rel in TEMPLATES.items():
-        data = (REPO / 'stow/desktop/.config/offsec/templates' / template).read_text()
+        data = (REPO / 'stow/desktop/.config/rice/templates' / template).read_text()
         for key, value in palette.items():
             data = data.replace('{{' + key + '}}', value)
         if '{{' in data:
@@ -170,7 +170,7 @@ def deploy(target, dry_run=False):
     stow = shutil.which('stow')
     if not stow:
         raise RuntimeError('GNU Stow is required: sudo pacman -S --needed stow')
-    backup_root = target / '.local/state/offsec-dotfiles/backups'
+    backup_root = target / '.local/state/rice/backups'
     # Do not follow pre-existing symlink parents when storing recovery data.
     if obstructing_parent(target, str(backup_root.relative_to(target)) + '/manifest.json'):
         raise RuntimeError('Backup directory has a symlink/non-directory ancestor')

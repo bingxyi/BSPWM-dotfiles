@@ -1,0 +1,13 @@
+[Unit]
+Description=Expire notifications received during Do not disturb after two hours
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %h/.config/rice/bin/notification-retention.py --watch
+Restart=always
+RestartSec=2
+UMask=0077
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target
