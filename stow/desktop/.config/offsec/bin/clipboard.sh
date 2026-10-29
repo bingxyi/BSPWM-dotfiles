@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Purpose: histórico de clipboard via greenclip + rofi
+# Purpose: clipboard history through greenclip and rofi
 # Usage: clipboard.sh
 
 THEME="$HOME/.config/rofi/themes/menu.rasi"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: emite os workspaces em JSON para o eww (deflisten)
-# Reage a cada evento do bspwm. Nunca renomeia desktops — só lê o que o
-# monitors.sh definiu e associa um ícone ao papel de cada posição.
+# BSPWM-dotfiles :: emit workspaces as JSON for Eww (deflisten)
+# React to each bspwm event without renaming desktops. Read the names
+# assigned by monitors.sh and map each position to a role icon.
 
 ICONS=("" "󰈹" "" "" "" "󰛳" "󰠮" "󰝚" "󰢹" "󰀻")
 ROLES=("terminal" "web" "proxy/burp" "code" "files" "network" "notes" "media" "vm/remote" "miscellaneous")

@@ -22,7 +22,7 @@ return {
       for keys, capture in pairs(selections) do
         vim.keymap.set({ "x", "o" }, keys, function()
           require("nvim-treesitter-textobjects.select").select_textobject(capture, "textobjects")
-        end, { desc = "Selecionar " .. capture })
+        end, { desc = "Select " .. capture })
       end
       local motions = {
         ["]f"] = { "goto_next_start", "@function.outer" },
@@ -33,7 +33,7 @@ return {
       for keys, motion in pairs(motions) do
         vim.keymap.set({ "n", "x", "o" }, keys, function()
           require("nvim-treesitter-textobjects.move")[motion[1]](motion[2], "textobjects")
-        end, { desc = "Mover para " .. motion[2] })
+        end, { desc = "Move to " .. motion[2] })
       end
     end,
   },
@@ -77,16 +77,16 @@ return {
           documentation = cmp.config.window.bordered({ border = "rounded" }),
         },
         mapping = cmp.mapping.preset.insert({
-          -- Tab ACEITA a sugestão (comportamento do VS Code). Navegar na lista
-          -- é com as setas ou C-n/C-p; Tab confirma e sai do caminho.
-          -- Sem menu aberto, Tab volta a ser Tab de verdade (indentação).
+          -- Tab accepts the suggestion, as in VS Code. Navigate with arrows
+          -- or C-n/C-p; Tab confirms. Without an open completion menu,
+          -- Tab retains its normal indentation behavior.
           ["<Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
               if cmp.get_selected_entry() then
                 cmp.confirm({ select = false })
               else
-                -- completeopt tem "noinsert": o primeiro item vem pré-marcado
-                -- mas não inserido, então select = true pega justamente ele.
+                -- completeopt includes noinsert: the first item is selected but not inserted.
+                -- select = true accepts that item.
                 cmp.confirm({ select = true })
               end
             elseif luasnip.expand_or_locally_jumpable() then
@@ -160,7 +160,7 @@ return {
         function()
           require("conform").format({ async = true, lsp_fallback = true })
         end,
-        desc = "formatar arquivo",
+        desc = "Format file",
       },
     },
     opts = {
@@ -195,7 +195,7 @@ return {
       vim.api.nvim_create_user_command("FormatToggle", function()
         vim.g.disable_autoformat = not vim.g.disable_autoformat
         vim.notify("format on save: " .. (vim.g.disable_autoformat and "off" or "on"))
-      end, { desc = "liga/desliga o format on save" })
+      end, { desc = "Toggle format on save" })
     end,
   },
 
@@ -221,7 +221,7 @@ return {
         dockerfile = { "hadolint" },
       }
 
-      -- roda só o que existe no PATH: nada de erro vermelho por ferramenta ausente
+      -- Run only tools found in PATH to avoid errors for missing executables.
       local function try_lint()
         local names = lint.linters_by_ft[vim.bo.filetype] or {}
         local available = {}
@@ -242,7 +242,7 @@ return {
         callback = try_lint,
       })
 
-      vim.api.nvim_create_user_command("Lint", try_lint, { desc = "roda os linters do filetype" })
+      vim.api.nvim_create_user_command("Lint", try_lint, { desc = "Run file type linters" })
     end,
   },
 }

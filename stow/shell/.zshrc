@@ -1,9 +1,9 @@
-# offsec-dotfiles :: zsh
-# Ambiente compartilhado com o X vem de ~/.config/offsec/env.
+# BSPWM-dotfiles :: zsh
+# Shared X11 and shell environment from ~/.config/offsec/env.
 
 [ -r "$HOME/.config/offsec/env" ] && source "$HOME/.config/offsec/env"
 
-#: --------------------------------------------------------------- histórico
+#: --------------------------------------------------------------- history
 HISTFILE="$XDG_STATE_HOME/zsh/history"
 HISTSIZE=50000
 SAVEHIST=50000
@@ -75,7 +75,7 @@ alias ports='ss -tulpn'
 alias myip='curl -s ifconfig.me; echo'
 alias tunip='ip -4 -o addr show tun0 2>/dev/null | awk "{print \$4}" | cut -d/ -f1'
 
-#: ------------------------------------------------------------ offsec atalhos
+#: ------------------------------------------------------------ offsec shortcuts
 alias eng='engagement.sh'
 alias tgt='target.sh'
 alias px='proxy.sh'
@@ -83,18 +83,18 @@ alias vpn='vpn.sh'
 alias shot='screenshot.sh'
 alias theme='theme.sh'
 
-# vai para o engagement ativo
+# Change to the active engagement directory.
 function cde() {
     local engagement_path
     engagement_path=$(cat "$XDG_DATA_HOME/offsec/engagement" 2>/dev/null)
     if [ -z "$engagement_path" ] || [ ! -d "$engagement_path" ]; then
-        echo "nenhum engagement ativo (use: eng --new)" >&2
+        echo "No active engagement (use: eng --new)" >&2
         return 1
     fi
     cd "$engagement_path" || return 1
 }
 
-# $TARGET sempre disponível no shell
+# $TARGET is always available in the shell.
 function target() {
     if [ $# -eq 0 ]; then
         cat "$XDG_DATA_HOME/offsec/target" 2>/dev/null
@@ -105,14 +105,14 @@ function target() {
 }
 export TARGET="$(cat "$XDG_DATA_HOME/offsec/target" 2>/dev/null)"
 
-# servidor http rápido no diretório atual
+# Quick HTTP server in the current directory.
 function serve() {
     local port="${1:-8000}"
     echo "http://$(ip -4 -o addr show tun0 2>/dev/null | awk '{print $4}' | cut -d/ -f1):$port"
     python -m http.server "$port"
 }
 
-# listener com readline
+# Listener with readline.
 function listen() {
     local port="${1:-4444}"
     if command -v rlwrap &>/dev/null; then
@@ -127,7 +127,7 @@ function urldec() { python -c 'import sys,urllib.parse;print(urllib.parse.unquot
 function b64()    { printf '%s' "$1" | base64 -w0; echo; }
 function b64d()   { printf '%s' "$1" | base64 -d; echo; }
 
-# yazi com cd ao sair (atalho: y)
+# yazi with directory change on exit (shortcut: y).
 function y() {
     local tmp cwd
     tmp="$(mktemp -t yazi-cwd.XXXXXX)"
@@ -152,21 +152,21 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 [ ! -r "$HOME/.local/bin/env" ] || . "$HOME/.local/bin/env"
 
 #: ------------------------------------------------- sudo nvim -> sudoedit
-# `sudo nvim /etc/foo` abre um nvim de ROOT, cujo $HOME é /root: nenhum plugin,
-# nenhum tema, nenhum keymap seu. `sudoedit` resolve isso pelo lado certo —
-# roda o nvim como VOCÊ (config inteira) numa cópia temporária e o sudo
-# reinstala o arquivo como root no fim.
+# "sudo nvim /etc/foo" opens Neovim as root with $HOME=/root, without your
+# plugins, theme, or keymaps. sudoedit runs Neovim as your user with the
+# full configuration on a temporary copy, then installs the edited file
+# as root when the editor exits.
 #
-# O caminho alternativo, apontar o nvim do root para ~/.config/nvim, faria o
-# root executar Lua que qualquer coisa rodando como você pode reescrever.
-# Numa máquina que roda binário de engagement e plugin de terceiro, isso é
-# escalada de privilégio esperando acontecer.
+# Pointing root's Neovim at ~/.config/nvim would execute Lua that any
+# process running as your user could rewrite. On a machine running
+# engagement binaries and third-party plugins, that creates
+# a privilege escalation path.
 sudo() {
     emulate -L zsh
     if [[ "$1" == (nvim|vim|vi) ]] && (( $# > 1 )); then
         local -a rest=("${@:2}")
-        # Só desvia quando todo argumento é caminho. Qualquer flag do nvim
-        # (-d para diff, -c, -u, +42) exige o nvim de verdade e segue reto.
+        # Redirect only when every argument is a path. Neovim flags
+        # (-d, -c, -u, +42) require the original Neovim invocation.
         if [[ -z "${(M)rest:#[-+]*}" ]]; then
             command sudoedit "${rest[@]}"
             return

@@ -2,10 +2,10 @@
 """Per-device libinput controls, restored at login and hotplug.
 
 GUI (no arguments): live preview — drag and try the mouse.
---restore              reaplica o mouse.json (login)
---watch                daemon: reaplica a cada hotplug
---list                 dump JSON dos dispositivos
---set-speed <v>        define a sensitivity de todos os mouses e salva
+--restore              reapply mouse.json at login
+--watch                daemon: reapply on each hotplug event
+--list                 dump devices as JSON
+--set-speed <v>        set sensitivity for all mice and save
 """
 import argparse
 import fcntl
@@ -31,7 +31,7 @@ CONTROLS = [
     ('High-resolution wheel', 'libinput High Resolution Wheel Scroll Enabled', 'bool', 0, 1),
 ]
 
-# Rótulos da escala de sensibilidade, do mais lento ao mais rápido.
+# Sensitivity scale labels, from slowest to fastest.
 SPEED_PRESETS = [
     ('Very slow', -0.60),
     ('Slow', -0.35),
@@ -90,7 +90,7 @@ def save(data):
 
 
 def apply(device, values):
-    """Aplica values ao dispositivo, verifica no servidor e desfaz se falhar."""
+    """Apply values to the device, verify with the server, and roll back on failure."""
     identifier = device[0]
     props = properties(identifier)
     if not isinstance(values, dict):
@@ -109,9 +109,9 @@ def apply(device, values):
             if any(str(v) not in ('0', '1') or (int(v) and available[i] != '1') for i, v in enumerate(raw)):
                 raise ValueError('Unavailable profile')
         elif len(raw) != 1 or not low <= float(raw[0]) <= high:
-            raise ValueError('Valor fora do intervalo: ' + prop)
+            raise ValueError('Value out of range: ' + prop)
         elif kind in ('bool', 'int') and not float(raw[0]).is_integer():
-            raise ValueError('Valor inteiro esperado: ' + prop)
+            raise ValueError('Integer value expected: ' + prop)
         pending[prop] = list(map(str, raw))
     changed = []
     try:
@@ -134,7 +134,7 @@ def apply(device, values):
             except (subprocess.SubprocessError, OSError):
                 failures.append(prop)
         if failures:
-            raise RuntimeError('Falha ao restaurar: ' + ', '.join(failures)) from error
+            raise RuntimeError('Restore failed: ' + ', '.join(failures)) from error
         raise
 
 
@@ -153,11 +153,11 @@ def restore():
 
 
 def set_speed(value):
-    """Caminho de linha de comando: mesma sensitivity em todo mouse libinput."""
+    """Command-line mode: apply the same sensitivity to every libinput mouse."""
     value = max(-1.0, min(1.0, float(value)))
     found = devices()
     if not found:
-        raise SystemExit('Nenhum mouse libinput conectado.')
+        raise SystemExit('No libinput mouse connected.')
     for device in found:
         values = {ACCEL: [round(value, 2)]}
         apply(device, values)
@@ -188,7 +188,7 @@ def watch():
 
 
 def speed_label(value):
-    """Rótulo humano mais próximo do valor, para a legenda da sensibilidade."""
+    """Return the nearest readable sensitivity label for the value."""
     name, _ = min(SPEED_PRESETS, key=lambda pair: abs(pair[1] - value))
     return name
 
@@ -208,8 +208,8 @@ def gui():
     gi.require_version('Gtk', '3.0')
     from gi.repository import Gtk, Gdk, GLib
 
-    # WM_CLASS = "offsec-mouse", "OffsecMouse" — casa com a regra do bspwm.
-    # Definido por aqui em vez de set_wmclass(), que está depreciado.
+    # WM_CLASS = "offsec-mouse", "OffsecMouse" matches the bspwm rule.
+    # Set it here instead of using the deprecated set_wmclass().
     GLib.set_prgname('offsec-mouse')
     Gdk.set_program_class('OffsecMouse')
 
@@ -264,7 +264,7 @@ def gui():
         buttons.pack_start(button, True, True, 0)
 
     current, widgets = [], {}
-    baseline = {}       # estado do dispositivo ao abrir/salvar — target do Undo
+    baseline = {}       # Device state at open/save time, used by Undo.
     guard = {'busy': False, 'timer': 0}
 
     def selected():
@@ -278,7 +278,7 @@ def gui():
         status.set_text(text)
 
     def collect():
-        """Lê os widgets e devolve o dicionário de valores libinput."""
+        """Read the widgets and return a dictionary of libinput values."""
         device = selected()
         if device is None:
             return {}
@@ -296,7 +296,7 @@ def gui():
         return values
 
     def live(*_):
-        """Aplica ao vivo, com debounce — arrastar a bar não inunda o servidor."""
+        """Apply live with debouncing so dragging the slider does not flood the server."""
         if guard['busy']:
             return
         if guard['timer']:
@@ -390,7 +390,7 @@ def gui():
                 selector.append_text(device[1])
             selector.set_active(0 if current else -1)
             if not current:
-                say('Nenhum mouse libinput conectado.', error=True)
+                say('No libinput mouse connected.', error=True)
             else:
                 say('')
         except Exception as error:

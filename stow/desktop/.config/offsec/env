@@ -1,18 +1,18 @@
-# offsec-dotfiles :: ambiente único da sessão
-# Lido pelo ~/.xprofile (SDDM e startx), pelo bspwmrc e pelo ~/.zshrc.
-# É o lugar certo para variáveis que precisam existir nos três caminhos.
+# BSPWM-dotfiles :: shared session environment
+# Read by ~/.xprofile (SDDM and startx), bspwmrc, and ~/.zshrc.
+# Define variables here when all three entry points need them.
 
 export EDITOR="nvim"
 export VISUAL="nvim"
-# sudoedit consulta SUDO_EDITOR -> VISUAL -> EDITOR, e roda o editor COMO VOCÊ,
-# com o ambiente intacto: seu ~/.config/nvim inteiro carrega ao editar /etc.
+# sudoedit checks SUDO_EDITOR -> VISUAL -> EDITOR and runs as your user,
+# retaining the environment so your full Neovim configuration loads for /etc edits.
 export SUDO_EDITOR="nvim"
 export TERMINAL="kitty"
 export BROWSER="firefox"
 export PAGER="less"
 export LESS="-R"
 
-# bspwm é não-reparenting: sem isso Burp/ZAP/Ghidra/JADX abrem como janela cinza
+# bspwm is non-reparenting; this prevents gray windows in Burp/ZAP/Ghidra/JADX.
 export _JAVA_AWT_WM_NONREPARENTING=1
 export AWT_TOOLKIT=XToolkit
 
@@ -27,8 +27,8 @@ export OFFSEC_VPN_DIR="${OFFSEC_VPN_DIR:-$HOME/vpn}"
 export OFFSEC_PROXY_HOST="127.0.0.1"
 export OFFSEC_PROXY_PORT="8080"
 
-# Deixe vazio para detectar o monitor primário via xrandr.
-# Preencha só se quiser forçar a barra em um monitor específico (ex.: DP-2).
+# Leave empty to detect the primary monitor through xrandr.
+# Set only to force the bar onto a specific output, such as DP-2.
 export OFFSEC_BAR_MONITOR=""
 
 export GTK_THEME_VARIANT=dark

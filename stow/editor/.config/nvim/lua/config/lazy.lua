@@ -12,7 +12,7 @@ if not uv.fs_stat(lazypath) then
   })
   if vim.v.shell_error ~= 0 then
     vim.api.nvim_echo({
-      { "Falha ao clonar o lazy.nvim:\n", "ErrorMsg" },
+      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
       { out, "WarningMsg" },
     }, true, {})
     vim.fn.getchar()

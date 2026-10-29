@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: bspwmrc
-# Regra de ouro deste arquivo: ele NUNCA escreve em monitors.sh.
-# Se ~/.config/bspwm/monitors.sh existir, ele manda na geometria e nos desktops.
+# BSPWM-dotfiles :: bspwmrc
+# This file never writes to monitors.sh.
+# If ~/.config/bspwm/monitors.sh exists, it owns monitor geometry and desktops.
 
 CONFIG_DIR="$HOME/.config"
 OFFSEC_DIR="$CONFIG_DIR/offsec"
@@ -19,7 +19,7 @@ function main() {
 }
 
 function load_env() {
-    # ambiente compartilhado com o .xprofile (idempotente: já pode estar exportado)
+    # Shared environment with .xprofile (idempotent: it may already be exported).
     if [ -r "$OFFSEC_DIR/env" ]; then
         # shellcheck disable=SC1091
         . "$OFFSEC_DIR/env"
@@ -37,36 +37,35 @@ function load_env() {
 }
 
 function setup_monitors() {
-    # monitors.sh é intocável: se existe, é a única fonte de verdade da geometria.
+    # Leave monitors.sh untouched: it is the sole source of monitor geometry.
     if [ -x "$CONFIG_DIR/bspwm/monitors.sh" ]; then
         "$CONFIG_DIR/bspwm/monitors.sh"
     elif [ -r "$CONFIG_DIR/bspwm/monitors.sh" ]; then
         bash "$CONFIG_DIR/bspwm/monitors.sh"
     fi
 
-    # Só depois: é o monitors.sh que marca o --primary do xrandr. Resolver o
-    # monitor da barra antes dele daria o primário do boot anterior — ou nenhum,
-    # e a barra nasceria no monitor vertical.
+    # Resolve the bar monitor after monitors.sh sets the RandR primary output.
+    # Resolving it earlier could use the previous boot's primary, or no primary,
+    # and place the bar on the portrait monitor.
     "$OFFSEC_DIR/bin/monitor-sync.py" || return 1
     resolve_bar_monitor
     order_monitors
 
-    # Um monitors.sh pode cuidar só da geometria (xrandr) e não nomear desktop
-    # nenhum. Aí o bspwm fica com o padrão dele — um desktop "Desktop" por
-    # monitor —, a coluna da barra imprime linhas vazias e o Super+1..0 não tem
-    # para onde ir. Só nesse caso assumimos o layout de dez.
+    # monitors.sh may configure RandR geometry without naming desktops.
+    # In that case bspwm leaves one "Desktop" per monitor, the bar has blank
+    # workspace rows, and Super+1..0 has no destination.
+    # Use the ten-desktop layout only when no desktop names have been assigned.
     if desktops_defined; then
         return 0
     fi
     setup_default_desktops
 }
 
-# O monitor da barra tem de ser o primeiro da lista, sempre — não só quando os
-# desktops são criados aqui. As regras usam índice global ('^3' = terceiro
-# desktop da lista inteira, onde nasce o Burp) e a coluna da barra desenha os
-# dez primeiros na ordem em que aparecem. A cada 'bspc wm -r' o bspwm
-# redescobre os monitores e os devolve em ordem geométrica; sem esta linha o
-# Burp abriria no monitor vertical depois de um restart.
+# Always put the bar monitor first, including when desktops already exist.
+# Rules use global indices ("^3" is the third desktop, where Burp opens),
+# and the bar lists the first ten desktops in that order.
+# After "bspc wm -r", bspwm rediscovers monitors in geometric order;
+# restore the intended order so Burp stays on the correct monitor.
 function order_monitors() {
     local -a others
     mapfile -t others < <(bspc query -M --names | grep -vxF "$BAR_MONITOR")
@@ -74,9 +73,9 @@ function order_monitors() {
     bspc wm -O "$BAR_MONITOR" "${others[@]}"
 }
 
-# Em que monitor a barra mora: o que o usuário fixou, senão o primário do
-# xrandr. Um nome inexistente (monitor desconectado, OFFSEC_BAR_MONITOR errado)
-# deixaria a barra sem padding em monitor nenhum — daí o último fallback.
+# Place the bar on the explicitly selected monitor, then the RandR primary.
+# An invalid name (disconnected output or incorrect OFFSEC_BAR_MONITOR)
+# would leave every monitor without bar padding, so fall back to a valid output.
 function resolve_bar_monitor() {
     BAR_MONITOR="${OFFSEC_BAR_MONITOR:-}"
     if [ -z "$BAR_MONITOR" ]; then
@@ -87,9 +86,9 @@ function resolve_bar_monitor() {
     fi
 }
 
-# Verdadeiro quando alguém já definiu os desktops (monitors.sh, ou o estado
-# restaurado de um 'bspc wm -r'). O bspwm sozinho cria exatamente um desktop
-# por monitor, todos chamados "Desktop" — essa é a assinatura do "ninguém mexeu".
+# True when monitors.sh or restored bspwm state has already assigned desktops.
+# An untouched bspwm creates exactly one desktop named "Desktop" per monitor;
+# use that pattern to detect an unconfigured layout.
 function desktops_defined() {
     local -a desktops monitors
     mapfile -t desktops < <(bspc query -D --names)
@@ -104,12 +103,12 @@ function desktops_defined() {
     return 1
 }
 
-# 1–6 no monitor da barra (o primário e largo: navegador, Burp, Ghidra) e 7–10
-# no secundário. A ordem dos monitores importa: as regras usam índice global
-# ('^3' = terceiro desktop), então o monitor da barra precisa vir primeiro.
+# Desktops 1–6 go on the wide primary/bar monitor (browser, Burp, Ghidra),
+# and 7–10 go on the secondary. Rules use global indices ("^3" is the third
+# desktop), so the bar monitor must come first.
 function setup_default_desktops() {
     local -a mons
-    mapfile -t mons < <(bspc query -M --names) # já na ordem do order_monitors
+    mapfile -t mons < <(bspc query -M --names) # Already sorted by order_monitors.
 
     if [ "${#mons[@]}" -lt 2 ]; then
         bspc monitor "${mons[0]}" -d 1 2 3 4 5 6 7 8 9 10
@@ -119,7 +118,7 @@ function setup_default_desktops() {
     bspc monitor "${mons[0]}" -d 1 2 3 4 5 6
     bspc monitor "${mons[1]}" -d 7 8 9 10
 
-    # Um terceiro monitor não pode empurrar o índice dos dez primeiros.
+    # A third monitor must not shift the first ten desktop indices.
     local i
     for ((i = 2; i < ${#mons[@]}; i++)); do
         bspc monitor "${mons[$i]}" -d "extra$((i - 1))"
@@ -150,7 +149,7 @@ function setup_visuals() {
     bspc config active_border_color "$normal"
     bspc config focused_border_color "$focused"
 
-    # padding: só o monitor que hospeda a barra lateral perde largura
+    # Reserve width only on the monitor hosting the sidebar.
     local m
     while IFS= read -r m; do
         if [ "$m" = "$BAR_MONITOR" ]; then
@@ -167,7 +166,7 @@ function setup_visuals() {
 function setup_rules() {
     bspc rule -r '*'
 
-    # utilitários em flutuante e centralizado
+    # Float and center utility windows.
     bspc rule -a OffsecMouse state=floating center=on
     bspc rule -a Pavucontrol state=floating center=on rectangle=900x600+0+0
     bspc rule -a Blueman-manager state=floating center=on
@@ -181,7 +180,7 @@ function setup_rules() {
     bspc rule -a scratchpad state=floating center=on sticky=on \
         rectangle=1200x700+0+0
 
-    # fluxo appsec: cada ferramenta nasce onde deve
+    # AppSec workflow: open each tool on its assigned desktop.
     bspc rule -a firefox desktop='^2'
     bspc rule -a Chromium desktop='^2'
     bspc rule -a Google-chrome desktop='^2'
@@ -209,30 +208,30 @@ function start_services() {
     run_once blueman-applet
     start_polkit_agent
 
-    # Preferências persistentes do painel, após os serviços da sessão.
+    # Restore persistent panel preferences after starting session services.
     "$OFFSEC_DIR/bin/session-restore.sh" &
     mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/offsec"
     "$OFFSEC_DIR/bin/mouse-settings.py" --watch >>"${XDG_DATA_HOME:-$HOME/.local/share}/offsec/mouse.log" 2>&1 &
 
-    # wallpaper salvo pelo wallpaper.sh
+    # Wallpaper saved by wallpaper.sh.
     "$OFFSEC_DIR/bin/wallpaper.sh" --restore &
 
-    # barra do perfil ativo (nyx = tint2, vesper = eww)
+    # Active profile bar (nyx = tint2, vesper = eww).
     "$OFFSEC_DIR/bin/bar.sh" --restart &
 
-    # Daemon do eww sempre de pé: a central de controle (Super+C) vive nele
-    # nos dois perfis. Subir aqui evita a espera do primeiro toggle, e o
-    # comando é idempotente — um segundo 'daemon' apenas retorna.
+    # Keep the Eww daemon ready: both profiles use it for the control center
+    # (Super+C). Starting it here avoids a delay on the first toggle.
+    # The command is idempotent; a second daemon invocation simply returns.
     if command -v eww >/dev/null 2>&1; then
         eww -c "$CONFIG_DIR/eww" daemon >/dev/null 2>&1 &
     fi
 
-    # teclado também dentro da sessão (redundância barata).
-    # Modelo e layout vêm do ~/.config/offsec/env; o padrão é ABNT2.
+    # Also apply the keyboard settings inside the session.
+    # Model and layout come from ~/.config/offsec/env; the default is ABNT2.
     setxkbmap -model "${OFFSEC_KB_MODEL:-abnt2}" -layout "${OFFSEC_KB_LAYOUT:-br}" &
     xsetroot -cursor_name left_ptr &
 
-    # Gancho por máquina: notebook, dock, VM. Não versionado, não obrigatório.
+    # Optional, untracked machine hook for laptops, docks, or VMs.
     if [ -x "$CONFIG_DIR/bspwm/local.sh" ]; then
         "$CONFIG_DIR/bspwm/local.sh" &
     fi

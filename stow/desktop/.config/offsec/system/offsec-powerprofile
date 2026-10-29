@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: helper root do perfil de energia (amd-pstate / intel-pstate)
+# BSPWM-dotfiles :: privileged power profile helper (amd-pstate / intel-pstate)
 #
-# Instalar:
+# Install:
 #   sudo install -Dm755 ~/.config/offsec/system/offsec-powerprofile /usr/local/bin/offsec-powerprofile
 #   sudo install -Dm440 ~/.config/offsec/system/sudoers-offsec-powerprofile /etc/sudoers.d/offsec-powerprofile
 #
-# Aceita exatamente um de: performance | balanced | power.  Nada mais é escrito
-# no sysfs, e a regra do sudoers fixa os três argumentos possíveis — não há
-# caminho de arquivo controlado pelo chamador.
+# Accept exactly one of: performance | balanced | power. Write nothing else
+# to sysfs. The sudoers rule fixes the three permitted arguments,
+# so the caller cannot choose an arbitrary file path.
 set -euo pipefail
 
 case "${1:-}" in

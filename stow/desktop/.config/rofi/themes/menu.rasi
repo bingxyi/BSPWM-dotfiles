@@ -1,4 +1,4 @@
-/* offsec-dotfiles :: menus compactos (dmenu) */
+/* BSPWM-dotfiles :: compact menus (dmenu) */
 
 * {
     background-color: transparent;
@@ -65,6 +65,6 @@ element-icon { size: 20px; vertical-align: 0.5; }
 element-text { vertical-align: 0.5; highlight: @hl-accent-alt; }
 element selected.normal element-text { text-color: @bg; highlight: @hl-bg; }
 
-/* paleta por ultimo: no rofi 2.0 as variaveis do arquivo importado
-   so resolvem se o @import vier depois de quem as usa. */
+/* Import the palette last: rofi 2.0 resolves imported variables only
+   when @import follows the declarations that use them. */
 @import "../colors.rasi"

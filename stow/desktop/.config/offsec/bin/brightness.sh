@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Purpose: brilho via brightnessctl com OSD (no-op elegante em desktop sem backlight)
+# Purpose: brightnessctl with OSD; a no-op on desktops without a backlight
 # Usage: brightness.sh --up | --down | --get
 
 if ! command -v brightnessctl &>/dev/null; then
@@ -8,7 +8,7 @@ if ! command -v brightnessctl &>/dev/null; then
 fi
 
 if [ -z "$(brightnessctl -l 2>/dev/null | grep -i backlight)" ]; then
-    # desktop sem backlight: não faz nada, mas não falha
+    # No backlight: do nothing and succeed.
     echo "0"
     exit 0
 fi

@@ -36,7 +36,7 @@ return {
         capabilities = vim.tbl_deep_extend("force", capabilities, cmp_lsp.default_capabilities())
       end
 
-      -- API nativa do neovim 0.11+: vale para todos os servidores de uma vez
+      -- Native Neovim 0.11+ API: configure all servers at once.
       vim.lsp.config("*", { capabilities = capabilities })
 
       vim.lsp.config("lua_ls", {
@@ -45,10 +45,9 @@ return {
             runtime = { version = "LuaJIT" },
             workspace = {
               checkThirdParty = false,
-              -- Sem a runtime do neovim na biblioteca, o lua_ls conhece a
-              -- linguagem mas nao a API: 'vim.' nao completa nada. Declarar
-              -- 'vim' apenas como global silencia o diagnostico, nao ensina
-              -- o servidor a sugerir.
+              -- Without the Neovim runtime library, lua_ls knows Lua but not the Neovim
+              -- API, so vim. has no completions. Declaring vim as a global only silences
+              -- diagnostics; it does not teach the server the API.
               library = vim.api.nvim_get_runtime_file("", true),
             },
             diagnostics = { globals = { "vim" } },
@@ -119,16 +118,16 @@ return {
             vim.keymap.set(mode or "n", keys, func, { buffer = event.buf, desc = "lsp: " .. desc })
           end
 
-          map("gd", "<cmd>Telescope lsp_definitions<CR>", "ir para a definição")
-          map("gr", "<cmd>Telescope lsp_references<CR>", "referências")
-          map("gI", "<cmd>Telescope lsp_implementations<CR>", "implementações")
-          map("gy", "<cmd>Telescope lsp_type_definitions<CR>", "tipo")
-          map("gD", vim.lsp.buf.declaration, "declaração")
-          map("K", vim.lsp.buf.hover, "documentação")
-          map("<C-k>", vim.lsp.buf.signature_help, "assinatura", "i")
-          map("<leader>cr", vim.lsp.buf.rename, "renomear símbolo")
+          map("gd", "<cmd>Telescope lsp_definitions<CR>", "Go to definition")
+          map("gr", "<cmd>Telescope lsp_references<CR>", "References")
+          map("gI", "<cmd>Telescope lsp_implementations<CR>", "Implementations")
+          map("gy", "<cmd>Telescope lsp_type_definitions<CR>", "Type definition")
+          map("gD", vim.lsp.buf.declaration, "Declaration")
+          map("K", vim.lsp.buf.hover, "Documentation")
+          map("<C-k>", vim.lsp.buf.signature_help, "Signature help", "i")
+          map("<leader>cr", vim.lsp.buf.rename, "Rename symbol")
           map("<leader>ca", vim.lsp.buf.code_action, "code action", { "n", "v" })
-          map("<leader>cl", "<cmd>LspInfo<CR>", "info dos servidores")
+          map("<leader>cl", "<cmd>LspInfo<CR>", "Server information")
 
           local client = vim.lsp.get_client_by_id(event.data.client_id)
           if client and client:supports_method("textDocument/inlayHint") then

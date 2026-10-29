@@ -20,10 +20,9 @@ opt.winblend = 0
 opt.splitbelow = true
 opt.splitright = true
 opt.splitkeep = "screen"
--- Cada campo de fillchars aceita EXATAMENTE um caractere. Vazio levanta
--- E1511 no neovim 0.12, e o erro aborta este arquivo inteiro — o que
--- derrubava junto o require("config.lazy") do init.lua e deixava a
--- instalacao de plugins sem nunca acontecer.
+-- Each fillchars field requires exactly one character. An empty value raises
+-- E1511 in Neovim 0.12 and aborts this file, preventing init.lua from loading
+-- config.lazy and bootstrapping plugins.
 opt.fillchars = {
   eob = " ",
   fold = " ",
@@ -65,7 +64,7 @@ opt.foldlevelstart = 99
 opt.list = true
 opt.listchars = { tab = "→ ", trail = "·", nbsp = "␣" }
 
--- Segurança básica ao abrir amostras de engagement: nada de modeline arbitrária
+-- Disable arbitrary modelines when opening engagement samples.
 opt.modeline = false
 opt.secure = true
 

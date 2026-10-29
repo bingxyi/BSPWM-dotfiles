@@ -1,6 +1,6 @@
--- Plugins e comandos que só existem porque a máquina é de application security.
+-- Plugins and commands for application security work.
 return {
-  -- cliente HTTP dentro do editor: .http versionado junto do engagement
+  -- In-editor HTTP client: version .http files alongside the engagement.
   {
     "mistweaverco/kulala.nvim",
     ft = { "http", "rest" },
@@ -11,33 +11,33 @@ return {
       icons = { inlay = { loading = "⏳", done = "✅", error = "❌" } },
     },
     keys = {
-      { "<leader>hs", function() require("kulala").run() end, desc = "enviar request", ft = "http" },
-      { "<leader>ha", function() require("kulala").run_all() end, desc = "enviar todas", ft = "http" },
-      { "<leader>hn", function() require("kulala").jump_next() end, desc = "próxima request", ft = "http" },
-      { "<leader>hp", function() require("kulala").jump_prev() end, desc = "request anterior", ft = "http" },
+      { "<leader>hs", function() require("kulala").run() end, desc = "Send request", ft = "http" },
+      { "<leader>ha", function() require("kulala").run_all() end, desc = "Send all requests", ft = "http" },
+      { "<leader>hn", function() require("kulala").jump_next() end, desc = "Next request", ft = "http" },
+      { "<leader>hp", function() require("kulala").jump_prev() end, desc = "Previous request", ft = "http" },
       { "<leader>ht", function() require("kulala").toggle_view() end, desc = "body/headers", ft = "http" },
-      { "<leader>hc", function() require("kulala").copy() end, desc = "copiar como curl", ft = "http" },
+      { "<leader>hc", function() require("kulala").copy() end, desc = "Copy as curl", ft = "http" },
     },
   },
 
-  -- inspeção de binários sem sair do nvim
+  -- Inspect binaries without leaving Neovim.
   {
     "RaafatTurki/hex.nvim",
     cmd = { "HexDump", "HexAssemble", "HexToggle" },
     config = true,
     keys = {
-      { "<leader>xH", "<cmd>HexToggle<CR>", desc = "alternar visão hexadecimal" },
+      { "<leader>xH", "<cmd>HexToggle<CR>", desc = "Toggle hex view" },
     },
   },
 
-  -- relatórios e notas em markdown com render decente
+  -- Render Markdown reports and notes.
   {
     "MeanderingProgrammer/render-markdown.nvim",
     ft = { "markdown", "codecompanion" },
     cmd = { "RenderMarkdown" },
     keys = {
-      { "<leader>mp", "<cmd>RenderMarkdown preview<CR>", desc = "Markdown: prévia ao lado", ft = "markdown" },
-      { "<leader>mt", "<cmd>RenderMarkdown buf_toggle<CR>", desc = "Markdown: alternar visualização", ft = "markdown" },
+      { "<leader>mp", "<cmd>RenderMarkdown preview<CR>", desc = "Markdown: side preview", ft = "markdown" },
+      { "<leader>mt", "<cmd>RenderMarkdown buf_toggle<CR>", desc = "Markdown: toggle rendering", ft = "markdown" },
     },
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
     opts = {
@@ -49,7 +49,7 @@ return {
     },
   },
 
-  -- debug (útil para PoC em Python/Go/Node)
+  -- Debug Python/Go/Node proofs of concept.
   {
     "mfussenegger/nvim-dap",
     dependencies = {
@@ -58,12 +58,12 @@ return {
     },
     keys = {
       { "<leader>db", function() require("dap").toggle_breakpoint() end, desc = "breakpoint" },
-      { "<leader>dc", function() require("dap").continue() end, desc = "continuar" },
+      { "<leader>dc", function() require("dap").continue() end, desc = "Continue" },
       { "<leader>di", function() require("dap").step_into() end, desc = "step into" },
       { "<leader>do", function() require("dap").step_over() end, desc = "step over" },
       { "<leader>dO", function() require("dap").step_out() end, desc = "step out" },
-      { "<leader>dt", function() require("dap").terminate() end, desc = "terminar" },
-      { "<leader>du", function() require("dapui").toggle() end, desc = "painel de debug" },
+      { "<leader>dt", function() require("dap").terminate() end, desc = "Terminate" },
+      { "<leader>du", function() require("dapui").toggle() end, desc = "Debug panel" },
     },
     config = function()
       local dap = require("dap")

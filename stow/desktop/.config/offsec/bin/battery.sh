@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: bateria (notebook)
-# Em máquinas sem bateria todos os blocos saem vazios — a barra simplesmente
-# não mostra nada, sem erro.
+# BSPWM-dotfiles :: laptop battery status
+# On machines without a battery, every block is empty,
+# so the bar hides the battery without reporting an error.
 
 SCRIPT_NAME=${0##*/}
 

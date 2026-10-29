@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: métricas curtas para a barra do Vesper
+# BSPWM-dotfiles :: compact metrics for the Vesper bar
 
 STATE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/offsec"
 mkdir -p "$STATE_DIR"

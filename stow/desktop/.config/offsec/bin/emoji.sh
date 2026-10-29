@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Purpose: seletor de glifos/emoji para relatórios e notas; copia para o clipboard
+# Purpose: pick glyphs/emoji for reports and notes, then copy to the clipboard
 # Usage: emoji.sh
 
 GLYPHS="$HOME/.config/offsec/glyphs.txt"

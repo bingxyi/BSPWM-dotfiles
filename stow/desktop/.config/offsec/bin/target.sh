@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: alvo ativo — aparece na barra, no prompt e vira variável $TARGET
+# BSPWM-dotfiles :: active target for the bar, prompt, and $TARGET variable
 
 SCRIPT_NAME=${0##*/}
 

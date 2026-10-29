@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: sincroniza as variáveis do eww com o estado real
-# Chamado quando a barra do Vesper sobe e, opcionalmente, em laço.
+# BSPWM-dotfiles :: synchronize Eww variables with the current state
+# Called when the Vesper bar starts and optionally in a loop.
 
 SCRIPT_NAME=${0##*/}
 

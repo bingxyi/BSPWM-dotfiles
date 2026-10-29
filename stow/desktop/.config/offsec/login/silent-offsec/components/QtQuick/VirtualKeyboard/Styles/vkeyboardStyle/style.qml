@@ -1284,28 +1284,28 @@ KeyboardStyle {
                     switch (InputContext.inputEngine.inputMode) {
                     case InputEngine.InputMode.Numeric:
                         if (["ar", "fa"].indexOf(InputContext.locale.substring(0, 2)) !== -1)
-                            return "\u0660\u0661\u0662";
+                            return "123";
                     // Fallthrough
                     case InputEngine.InputMode.Dialable:
                         return "123";
                     case InputEngine.InputMode.Greek:
-                        return "ΑΒΓ";
+                        return "Greek";
                     case InputEngine.InputMode.Cyrillic:
-                        return "АБВ";
+                        return "Cyrillic";
                     case InputEngine.InputMode.Arabic:
                         if (InputContext.locale.substring(0, 2) === "fa")
-                            return "\u0627\u200C\u0628\u200C\u067E";
-                        return "\u0623\u200C\u0628\u200C\u062C";
+                            return "Persian";
+                        return "Arabic";
                     case InputEngine.InputMode.Hebrew:
-                        return "\u05D0\u05D1\u05D2";
+                        return "Hebrew";
                     case InputEngine.InputMode.ChineseHandwriting:
-                        return "中文";
+                        return "Chinese";
                     case InputEngine.InputMode.JapaneseHandwriting:
-                        return "日本語";
+                        return "Japanese";
                     case InputEngine.InputMode.KoreanHandwriting:
-                        return "한국어";
+                        return "Korean";
                     case InputEngine.InputMode.Thai:
-                        return "กขค";
+                        return "Thai";
                     default:
                         return "Abc";
                     }

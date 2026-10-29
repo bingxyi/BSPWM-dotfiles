@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: menu de energia com confirmação
+# BSPWM-dotfiles :: power menu with confirmation
 
 DEPENDENCIES=(rofi systemctl)
 SCRIPT_NAME=${0##*/}

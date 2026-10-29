@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: gera um wallpaper abstrato a partir das cores de um tema.
-# Serve de padrão para temas que não trazem imagem própria.
-# uso: wallgen.sh <tema> [saida.png]     wallgen.sh --all     wallgen.sh --force <tema>
+# BSPWM-dotfiles :: generate an abstract wallpaper from a theme palette
+# Provide a default for themes without their own artwork.
+# Usage: wallgen.sh <theme> [output.png] | --all | --force <theme>
 set -euo pipefail
 
 . "$HOME/.config/offsec/bin/lib.sh"
 
 LAND_W=1920; LAND_H=1080
-# O monitor em pé recebe a sua própria arte, gerada já na resolução nativa
-# dele. É o que evita a ampliação que o feh faria a partir de uma arte 16:9.
+# Generate separate artwork at the portrait monitor's native resolution
+# to avoid the enlargement feh would apply to a 16:9 image.
 PORT_W="${OFFSEC_WALL_PORTRAIT_W:-1080}"
 PORT_H="${OFFSEC_WALL_PORTRAIT_H:-1920}"
-# Tela de origem dos brilhos. Precisa ser larga o bastante para o recorte
-# deslocado caber inteiro: um recorte que passa da borda vira faixa preta.
+# Source canvas for the glows. Keep it wide enough for the shifted crop;
+# a crop extending beyond an edge produces a black strip.
 GLOW=3840
 
 WALLGEN_TMP=""
@@ -24,7 +24,7 @@ function color_of() {
         "$THEMES_DIR/$theme.conf" 2>/dev/null | grep . || printf '%s' "$fallback"
 }
 
-# Recorte deslocado, sempre dentro da tela — offsets em fração do excedente.
+# Shifted crop within the canvas; offsets are fractions of the surplus.
 function glow() {
     local w="$1" h="$2" color="$3" dx="$4" dy="$5" scale="$6" out="$7"
     magick -size ${GLOW}x${GLOW} radial-gradient:"$color"-black \
@@ -32,19 +32,19 @@ function glow() {
         -evaluate multiply "$scale" "$out"
 }
 
-# A mesma receita em qualquer proporção: nada aqui assume 16:9.
+# Use the same recipe at any aspect ratio; do not assume 16:9.
 function render_canvas() {
     local w="$1" h="$2" bg="$3" bg_dim="$4" accent="$5" accent_alt="$6" out="$7"
-    # Um trap RETURN aqui sobreviveria ao retorno desta função e estouraria
-    # em quem a chamou, com $tmp já fora de escopo. Limpeza explícita + EXIT.
+    # A RETURN trap would outlive this function and fire in its caller,
+    # where $tmp is out of scope. Use explicit cleanup and an EXIT trap.
     local tmp; tmp=$(mktemp -d); WALLGEN_TMP="$tmp"
 
-    # Base: gradiente diagonal do fundo claro do tema para o fundo profundo.
+    # Base: a diagonal gradient from the light background to the deep background.
     magick -size ${h}x${w} gradient:"$bg"-"$bg_dim" -rotate 90 \
         -resize ${w}x${h}\! "$tmp/base.png"
 
-    # Dois brilhos radiais. 'screen' soma luz: o preto do gradiente não
-    # acrescenta nada e só o miolo colorido acende — daí a cor sobreviver.
+    # Two radial glows. The screen blend adds light: gradient black adds nothing,
+    # so only the colored center brightens and retains its hue.
     glow "$w" "$h" "$accent"     +480 +300 0.34 "$tmp/g1.png"
     glow "$w" "$h" "$accent_alt" -560 -340 0.20 "$tmp/g2.png"
 
@@ -55,7 +55,7 @@ function render_canvas() {
         -modulate 100,104,100 \
         -quality 94 "$tmp/lit.png"
 
-    # Vinheta suave: escurece só as quinas, sem apagar o brilho.
+    # Soft vignette: darken only the corners while retaining the glow.
     magick -size ${w}x${h} radial-gradient:white-'#5e5e5e' "$tmp/vig.png"
     magick "$tmp/lit.png" "$tmp/vig.png" -compose multiply -composite \
         -quality 94 "$out"
@@ -63,7 +63,7 @@ function render_canvas() {
     rm -rf "$tmp"; WALLGEN_TMP=""
 }
 
-# O nome da variante retrato é o contrato com o wallpaper.sh.
+# The portrait variant name is shared with wallpaper.sh.
 function portrait_path() {
     local out="$1"
     printf '%s-portrait.%s' "${out%.*}" "${out##*.}"
@@ -92,7 +92,7 @@ function generate() {
     printf '%s\n%s\n' "$out" "$portrait"
 }
 
-# A arte 16:9 já existe e não deve ser tocada: gera só a variante retrato.
+# The 16:9 artwork already exists; generate only its portrait variant.
 function generate_portrait() {
     local theme="$1" out="$2" portrait
     load_colors "$theme"

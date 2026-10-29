@@ -1,6 +1,6 @@
 local augroup = vim.api.nvim_create_augroup("offsec", { clear = true })
 
--- destaque ao copiar
+-- Highlight copied text.
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = augroup,
   callback = function()
@@ -8,7 +8,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   end,
 })
 
--- volta para a última posição no arquivo
+-- Restore the last cursor position in the file.
 vim.api.nvim_create_autocmd("BufReadPost", {
   group = augroup,
   callback = function(event)
@@ -24,7 +24,7 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
--- remove espaços em branco no fim das linhas ao salvar
+-- Remove trailing whitespace when saving.
 vim.api.nvim_create_autocmd("BufWritePre", {
   group = augroup,
   pattern = "*",
@@ -37,7 +37,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
--- fecha janelas utilitárias com q
+-- Close utility windows with q.
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup,
   pattern = { "help", "qf", "man", "lspinfo", "checkhealth", "startuptime", "notify" },
@@ -47,7 +47,7 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- cria diretórios que ainda não existem ao salvar
+-- Create missing parent directories when saving.
 vim.api.nvim_create_autocmd("BufWritePre", {
   group = augroup,
   callback = function(event)
@@ -59,7 +59,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
--- tipos de arquivo comuns em teste de aplicação
+-- File types commonly used in application security testing.
 vim.filetype.add({
   extension = {
     http = "http",
@@ -72,7 +72,7 @@ vim.filetype.add({
   },
 })
 
--- terminal sem número de linha
+-- Hide line numbers in terminals.
 vim.api.nvim_create_autocmd("TermOpen", {
   group = augroup,
   callback = function()
@@ -82,13 +82,13 @@ vim.api.nvim_create_autocmd("TermOpen", {
   end,
 })
 
--- sudoedit edita uma CÓPIA temporária com sufixo aleatório de 8 caracteres:
+-- sudoedit edits a temporary copy with a random eight-character suffix:
 --   /etc/fstab            -> /var/tmp/fstab.a1B2c3D4
 --   /etc/nginx/nginx.conf -> /var/tmp/nginx.a1B2c3D4.conf
--- Nos arquivos sem extensão (fstab, hosts, PKGBUILD, sudoers, crontab) o nvim
--- detecta o tipo PELO NOME, e o sufixo quebra a detecção — abre sem realce
--- nenhum. Reconstituímos o nome original só para decidir o filetype; o buffer
--- continua apontando para o temporário, que é o que o sudoedit copia de volta.
+-- For extensionless files (fstab, hosts, PKGBUILD, sudoers, crontab), Neovim
+-- detects file type by name. The suffix breaks detection and highlighting.
+-- Reconstruct the original name only to select the file type; keep the buffer
+-- pointing at the temporary file that sudoedit will copy back.
 local function sudoedit_original(basename)
   -- nginx.a1B2c3D4.conf -> nginx.conf
   local stem, extension = basename:match("^(.+)%.%w%w%w%w%w%w%w%w(%.[^.]+)$")
@@ -107,9 +107,9 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
     if not original then
       return
     end
-    -- Alguns nomes (hosts, sudoers, crontab) o nvim só reconhece pelo caminho
-    -- inteiro, não pelo nome solto. Como o sudoedit não revela a origem e a
-    -- esmagadora maioria dos alvos mora em /etc, tentamos lá como segunda via.
+    -- Neovim recognizes some files (hosts, sudoers, crontab) only by full path.
+    -- sudoedit does not expose the original path; most targets live in /etc,
+    -- so try that directory as a fallback.
     local detected = vim.filetype.match({ filename = original, buf = event.buf })
       or vim.filetype.match({ filename = "/etc/" .. original, buf = event.buf })
     if detected then

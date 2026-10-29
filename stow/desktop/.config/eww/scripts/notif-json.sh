@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: histórico de notificações em JSON para o eww
-# Lê o arquivo alimentado pelo notif-log.sh (chamado pelo dunst).
+# BSPWM-dotfiles :: notification history as JSON for Eww
+# Read the file written by notif-log.sh, which is called by Dunst.
 
 LOG="${XDG_DATA_HOME:-$HOME/.local/share}/offsec/notifications.json"
 

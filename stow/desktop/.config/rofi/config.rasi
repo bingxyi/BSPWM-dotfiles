@@ -1,4 +1,4 @@
-/* offsec-dotfiles :: rofi */
+/* BSPWM-dotfiles :: rofi */
 configuration {
     modes: "drun,run,window,filebrowser";
     font: "JetBrainsMono Nerd Font 11";
@@ -16,10 +16,10 @@ configuration {
     me-select-entry: "";
     me-accept-entry: "MousePrimary";
     kb-cancel: "Escape,MouseSecondary";
-    /* Control+k e Control+j sao dos padroes kb-remove-to-eol e
-       kb-accept-entry. O rofi recusa a ligacao INTEIRA quando uma das teclas
-       ja tem dono — era por isso que ate as setas paravam de funcionar.
-       Libera-se o dono padrao antes de reaproveitar a tecla. */
+    /* Control+k and Control+j default to kb-remove-to-eol and
+       kb-accept-entry. rofi rejects an entire binding if any key is already
+       assigned, which also disables the arrow keys in that binding.
+       Clear the default assignment before reusing the key. */
     kb-remove-to-eol: "";
     kb-accept-entry: "Return,KP_Enter,Control+m";
     kb-row-up: "Up,Control+k,Control+p";

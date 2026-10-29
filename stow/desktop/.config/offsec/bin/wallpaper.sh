@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: seletor de wallpaper com preview em grade (rofi)
+# BSPWM-dotfiles :: wallpaper picker with rofi grid previews
 
 SCRIPT_NAME=${0##*/}
 VERSION="1.0.0"
@@ -64,7 +64,7 @@ function main() {
 
 function list_wallpapers() {
     [ -d "$WALLPAPER_DIR" ] || return 0
-    # As variantes "-portrait" são derivadas, não escolhas: ficam fora do menu.
+    # The "-portrait" variants are derived assets; exclude them from the menu.
     find -L "$WALLPAPER_DIR" -maxdepth 2 -type f ! -iname '*-portrait.*' \
         \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) |
         sort
@@ -92,7 +92,7 @@ function menu_wallpaper() {
     set_wallpaper "$file" pin
 }
 
-# A chave usa o nome do tema; nunca o caminho ou o texto fornecido ao rofi.
+# Use the theme name as the key, never a path or text supplied to rofi.
 function wallpaper_key() {
     local name
     name=$(theme_get name default)
@@ -100,7 +100,7 @@ function wallpaper_key() {
     printf 'wallpaper-theme-%s' "$name"
 }
 
-# Migra a escolha global antiga somente para o tema em que ela estava ativa.
+# Migrate the old global choice only to the theme where it was active.
 function migrate_wallpaper() {
     [ "$(state_get wallpaper_per_theme 0)" = 1 ] && return 0
     local key file
@@ -112,28 +112,28 @@ function migrate_wallpaper() {
     state_set wallpaper_per_theme 1
 }
 
-# --- ajuste por monitor ---------------------------------------------------
-# feh --bg-fill recebe UMA imagem e amplia até cobrir cada monitor. No monitor
-# em pé (1080x1920) uma arte 16:9 precisa de 1,8x a 2,5x de zoom e só uma
-# fatia central sobrevive ao corte — daí a sensação de resolução ruim.
-# Aqui cada head do Xinerama recebe uma imagem já no tamanho exato dele,
-# então o feh não reescala mais nada.
+# --- fit each monitor ---------------------------------------------------
+# feh --bg-fill enlarges a single image to cover each monitor. On a portrait
+# output (1080x1920), 16:9 artwork needs 1.8x–2.5x enlargement and loses
+# all but a central strip, making the image look blurry.
+# Give each Xinerama head an image at its exact size
+# so feh does not need to rescale it.
 
 WALLFIT_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/offsec/wallfit"
-# Acima deste fator de ampliação, cobrir custa nitidez demais e vale mais
-# conter a arte inteira sobre um fundo desfocado dela mesma.
+# Above this enlargement factor, preserve sharpness by containing
+# the full artwork over a blurred version of itself.
 WALLFIT_MAX_UPSCALE="${OFFSEC_WALL_MAX_UPSCALE:-1.35}"
-# ...e desde que o corte jogue fora arte demais. Ampliar 1,4x uma arte que já
-# tem a proporção do monitor não perde nada; o que estraga é o corte grande.
+# Also require substantial cropping. Enlarging matching aspect ratios by
+# 1.4x loses no content; excessive cropping is the problem.
 WALLFIT_MIN_KEEP="${OFFSEC_WALL_MIN_KEEP:-0.85}"
 WALLFIT_VERSION=2
 
-# Heads na mesma ordem em que o feh consome os arquivos da linha de comando.
+# List heads in the order feh consumes its command-line image arguments.
 function xinerama_heads() {
     xdpyinfo -ext XINERAMA 2>/dev/null | awk '/head #/ {print $3}'
 }
 
-# Um tema pode trazer arte retrato própria; o wallgen.sh gera "-portrait".
+# Themes may supply portrait artwork; wallgen.sh generates "-portrait" variants.
 function portrait_variant() {
     local src="$1" dir base cand
     dir=$(dirname "$src")
@@ -142,7 +142,7 @@ function portrait_variant() {
     [ -f "$cand" ] && printf '%s' "$cand"
 }
 
-# Imprime o caminho da imagem já no tamanho do monitor; usa cache em disco.
+# Print the image path at the monitor size, using a disk cache.
 function render_for_monitor() {
     local src="$1" W="$2" H="$3"
     local key out Ws Hs fill cheap w h fx fy feather tmp
@@ -160,10 +160,10 @@ function render_for_monitor() {
     read -r Ws Hs < <(magick identify -format '%w %h\n' "$src[0]" 2>/dev/null)
     [ -n "${Hs:-}" ] && [ "$Ws" -gt 0 ] && [ "$Hs" -gt 0 ] || return 1
 
-    # O que o --bg-fill faria: escala para cobrir, cortando o excedente.
+    # Simulate --bg-fill: scale to cover, cropping the surplus.
     fill=$(awk -v w="$W" -v h="$H" -v ws="$Ws" -v hs="$Hs" \
         'BEGIN{a=w/ws; b=h/hs; print (a>b?a:b)}')
-    # keep = fração da arte que sobrevive a esse corte.
+    # keep = fraction of the artwork retained after cropping.
     cheap=$(awk -v f="$fill" -v m="$WALLFIT_MAX_UPSCALE" -v k="$WALLFIT_MIN_KEEP" \
         -v w="$W" -v h="$H" -v ws="$Ws" -v hs="$Hs" \
         'BEGIN{keep=(w*h)/(f*f*ws*hs); print (f<=m || keep>=k)?1:0}')
@@ -175,8 +175,8 @@ function render_for_monitor() {
         return 0
     fi
 
-    # Contém a arte inteira (sem corte, sem ampliar) sobre um fundo desfocado
-    # dela mesma. As bordas da faixa recebem alfa em rampa: sem emenda dura.
+    # Contain the full image without cropping or enlargement over a blurred copy.
+    # Fade the strip edges with an alpha ramp to avoid a hard seam.
     read -r w h < <(magick "$src[0]" -resize "${W}x${H}" -format '%w %h\n' info: 2>/dev/null)
     [ -n "${h:-}" ] || return 1
     fx=$(( (W - w) / 2 ))
@@ -213,13 +213,13 @@ function render_for_monitor() {
     return 1
 }
 
-# Aplica o wallpaper com uma imagem sob medida para cada monitor.
+# Apply a separately fitted wallpaper image to each monitor.
 function apply_wallpaper() {
     local file="$1" head W H src pv out
     local -a heads rendered
 
     mapfile -t heads < <(xinerama_heads)
-    # Sem magick ou sem Xinerama legível, mantém o comportamento antigo.
+    # Keep the previous behavior if magick or readable Xinerama data is unavailable.
     if ! command -v magick &>/dev/null || [ "${#heads[@]}" -eq 0 ]; then
         feh --no-fehbg --bg-fill "$file"
         return $?
@@ -241,9 +241,9 @@ function apply_wallpaper() {
         rendered+=( "$out" )
     done
 
-    # Cada arquivo já tem o tamanho exato do seu head: o feh não reescala.
+    # Each image already matches its head size; feh does not rescale it.
     feh --no-fehbg --bg-fill "${rendered[@]}" || return 1
-    # Recortes de wallpapers que não se usa mais não precisam ficar no disco.
+    # Remove cached crops for wallpapers that are no longer used.
     find "$WALLFIT_CACHE" -maxdepth 1 -name '*.png' -atime +30 -delete 2>/dev/null
     return 0
 }
@@ -268,14 +268,14 @@ function set_wallpaper() {
         state_set "$key" "$file"
     fi
 
-    # cache do lock screen com o mesmo papel de parede
+    # Build the lock screen cache using the same wallpaper.
     if [ "$previous" != "$file" ] && command -v betterlockscreen &>/dev/null; then
         (betterlockscreen -u "$file" --fx dimblur >/dev/null 2>&1 &)
     fi
     notify "wallpaper" "$(basename "$file")" preferences-desktop-wallpaper low
 }
 
-# Devolve o controle ao tema: limpa a fixação e reaplica o tema ativo.
+# Return control to the theme: clear the override and reapply the active theme.
 function unpin_wallpaper() {
     migrate_wallpaper || return 1
     state_clear "$(wallpaper_key)"
@@ -308,7 +308,7 @@ function random_wallpaper() {
     local file
     file=$(list_wallpapers | shuf -n1)
     if [ -z "$file" ]; then
-        # sem wallpapers: fundo sólido com a cor do tema ativo
+        # No wallpapers: use the active theme's solid background color.
         xsetroot -solid "$(theme_get bg '#1e1e2e')"
         return 0
     fi

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: VPN do lab (OpenVPN/WireGuard) com status na barra
+# BSPWM-dotfiles :: lab VPN (OpenVPN/WireGuard) with bar status
 
 SCRIPT_NAME=${0##*/}
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: central de controle (eww) na direita do monitor primário
+# BSPWM-dotfiles :: Eww control center on the right of the primary monitor
 #
-# A animação exige duas etapas: a janela precisa existir antes de o revealer
-# poder deslizar. Abrir e revelar no mesmo instante mostraria o painel já
-# inteiro, sem transição — daí o par abrir -> (pequena espera) -> revelar.
+# Animation needs two steps: create the window before sliding the revealer.
+# Opening and revealing at once would show the full panel immediately.
+# Use open -> brief delay -> reveal to preserve the transition.
 #
-# Funciona em qualquer perfil: o daemon do eww sobe sob demanda, então a
-# central existe mesmo no perfil Nyx, onde a barra é o tint2.
+# Works with either profile: start the Eww daemon on demand,
+# including in Nyx, where tint2 provides the bar.
 
 SCRIPT_NAME=${0##*/}
 
@@ -25,8 +25,8 @@ EOM
     exit 1
 }
 
-# A barra é a única superfície sempre visível: o glifo precisa dizer, de
-# relance, se algo está segurando o sistema acordado. DND já tem seu sino.
+# The bar is always visible, so its glyph must show at a glance
+# whether an inhibitor is keeping the system awake. DND has its own bell.
 function print_glyph() {
     local caffeine color glyph
     caffeine=$("$OFFSEC_DIR/bin/caffeine.sh" --status 2>/dev/null)

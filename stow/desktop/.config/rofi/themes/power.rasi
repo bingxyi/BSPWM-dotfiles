@@ -1,4 +1,4 @@
-/* offsec-dotfiles :: menu de energia */
+/* BSPWM-dotfiles :: power menu */
 
 * {
     background-color: transparent;
@@ -52,6 +52,6 @@ element selected.normal {
     text-color:       @bg;
 }
 
-/* paleta por ultimo: no rofi 2.0 as variaveis do arquivo importado
-   so resolvem se o @import vier depois de quem as usa. */
+/* Import the palette last: rofi 2.0 resolves imported variables only
+   when @import follows the declarations that use them. */
 @import "../colors.rasi"

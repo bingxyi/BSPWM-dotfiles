@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Purpose: colinha de atalhos — lê o sxhkdrc e mostra comentário + tecla em rofi
+# Purpose: read sxhkdrc and show shortcut comments and keys in rofi
 # Usage: cheatsheet.sh
 
 SXHKDRC="$HOME/.config/sxhkd/sxhkdrc"

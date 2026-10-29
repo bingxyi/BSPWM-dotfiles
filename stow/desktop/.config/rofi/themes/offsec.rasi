@@ -1,4 +1,4 @@
-/* offsec-dotfiles :: lançador principal */
+/* BSPWM-dotfiles :: main launcher */
 
 * {
     background-color: transparent;
@@ -39,7 +39,7 @@ prompt {
 }
 
 entry {
-    placeholder:       "buscar…";
+    placeholder:       "Search…";
     placeholder-color: @muted;
     vertical-align:    0.5;
     cursor:            text;
@@ -117,6 +117,6 @@ button selected {
     text-color:       @accent;
 }
 
-/* paleta por ultimo: no rofi 2.0 as variaveis do arquivo importado
-   so resolvem se o @import vier depois de quem as usa. */
+/* Import the palette last: rofi 2.0 resolves imported variables only
+   when @import follows the declarations that use them. */
 @import "../colors.rasi"

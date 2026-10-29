@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: painel central de AppSec (Super+O)
-# Tudo que se repete em um teste de aplicação, a um atalho de distância.
+# BSPWM-dotfiles :: AppSec hub (Super+O)
+# Common application security tasks, one shortcut away.
 
 DEPENDENCIES=(rofi xclip)
 SCRIPT_NAME=${0##*/}

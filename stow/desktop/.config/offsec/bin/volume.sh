@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: volume com OSD (wpctl/pipewire)
+# BSPWM-dotfiles :: volume with OSD (wpctl/PipeWire)
 
 DEPENDENCIES=(wpctl)
 SCRIPT_NAME=${0##*/}

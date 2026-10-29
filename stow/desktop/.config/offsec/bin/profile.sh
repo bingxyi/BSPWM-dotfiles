@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: alterna entre os dois dotfiles (Nyx e Vesper) sem relogar
+# BSPWM-dotfiles :: switch between Nyx and Vesper without logging out
 
 SCRIPT_NAME=${0##*/}
 

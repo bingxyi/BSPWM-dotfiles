@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: manter o sistema acordado (nunca bloquear/apagar a tela)
+# BSPWM-dotfiles :: keep the system awake (disable automatic locking/blanking)
 #
-# Duas camadas, porque cada uma cobre um caminho diferente de ociosidade:
-#   X11  — 'xset s off -dpms' impede o screensaver e o desligamento da tela
-#   systemd — systemd-inhibit segura um lock de idle/sleep enquanto vive
+# Two layers cover different idle paths:
+#   X11 — "xset s off -dpms" disables the screensaver and display power saving
+#   systemd — systemd-inhibit holds an idle/sleep lock while running
 #
-# A preferência é persistente; o PID representa apenas o inibidor desta sessão.
+# The preference persists; the PID tracks only this session's inhibitor.
 
 SCRIPT_NAME=${0##*/}
 
@@ -30,9 +30,9 @@ function is_on() {
     [ -r "$PIDFILE" ] || return 1
     pid=$(cat "$PIDFILE" 2>/dev/null)
     [[ "$pid" =~ ^[0-9]+$ ]] || return 1
-    # PID vivo E ainda sendo nosso inibidor: um PID reciclado não conta.
+    # Require a live PID that still belongs to our inhibitor; reject recycled PIDs.
     kill -0 "$pid" 2>/dev/null || { rm -f "$PIDFILE"; return 1; }
-    grep -qaE 'Caffeine mode active|modo cafeína ativo' "/proc/$pid/cmdline" 2>/dev/null || { rm -f "$PIDFILE"; return 1; }
+    grep -qaF 'Caffeine mode active' "/proc/$pid/cmdline" 2>/dev/null || { rm -f "$PIDFILE"; return 1; }
     return 0
 }
 
@@ -72,7 +72,7 @@ function caffeine_off() {
     local pid
     if is_on; then
         pid=$(cat "$PIDFILE" 2>/dev/null)
-        # setsid cria um grupo próprio; encerra também o sleep filho.
+        # setsid creates a separate process group; also stop its child sleep.
         if [ "$(ps -o pgid= -p "$pid" | tr -d ' ')" = "$pid" ]; then
             kill -- "-$pid" 2>/dev/null
         else
@@ -82,7 +82,7 @@ function caffeine_off() {
     fi
 
     if [ -n "${DISPLAY:-}" ] && command -v xset >/dev/null 2>&1; then
-        # devolve os padrões do X: screensaver em 10 min, DPMS na escala usual
+        # Restore X defaults: a ten-minute screensaver and the usual DPMS timeouts.
         xset s on +dpms 2>/dev/null
         xset s 600 600 2>/dev/null
         xset dpms 600 900 1200 2>/dev/null

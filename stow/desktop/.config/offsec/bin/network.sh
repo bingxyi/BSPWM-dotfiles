@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: menu de rede (nmcli) + status para a barra
+# BSPWM-dotfiles :: network menu (nmcli) and bar status
 
 SCRIPT_NAME=${0##*/}
 
@@ -108,15 +108,15 @@ function wifi_state() {
     esac
 }
 
-# O nome mostrado no cartão de Wi-Fi da central. Distingue os três casos que
-# importam para o usuário: rádio desligado, ligado sem associação, e o SSID.
+# Wi-Fi card label in the control center: distinguish radio off,
+# radio on without an association, and the connected SSID.
 function wifi_name() {
     if [ "$(wifi_state)" = "off" ]; then
         printf 'disabled'
         return 0
     fi
     local ssid
-    # Consulta o cache; abrir a central não deve disparar uma varredura Wi-Fi.
+    # Read cached results; opening the control center must not trigger a Wi-Fi scan.
     ssid=$(nmcli -t -f ACTIVE,SSID device wifi list --rescan no 2>/dev/null |
         awk -F: '$1 == "yes" { print $2; exit }')
     if [ -n "$ssid" ]; then

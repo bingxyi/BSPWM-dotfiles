@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Lança o Burp Suite Professional (instalação em ~/Burpsuite-Professional).
-# O nome "burpsuite-pro" é o que o proxy.sh --burp (super+shift+b) procura no PATH.
+# Launch Burp Suite Professional from ~/Burpsuite-Professional.
+# proxy.sh --burp (Super+Shift+B) looks for "burpsuite-pro" in PATH.
 
 BURP_DIR="$HOME/Burpsuite-Professional"
 shopt -s nullglob
@@ -16,7 +16,7 @@ if [ -z "$BURP_JAR" ]; then
     exit 1
 fi
 
-# bspwm não é reparenting: sem isso o Swing abre janela cinza
+# bspwm is non-reparenting; this prevents gray Swing windows.
 export _JAVA_AWT_WM_NONREPARENTING=1
 
 cd "$BURP_DIR" || exit 1

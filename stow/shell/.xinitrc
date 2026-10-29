@@ -3,7 +3,7 @@
     [ -x "$f" ] && . "$f"
 done
 
-# Mesma fonte de ambiente que o SDDM usa — zero divergência entre as rotas
+# Use the same environment source as SDDM so both startup paths agree.
 [ -f "$HOME/.xprofile" ] && . "$HOME/.xprofile"
 
 exec bspwm

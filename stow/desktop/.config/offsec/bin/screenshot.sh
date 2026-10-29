@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: capturas que caem direto na pasta de evidências do engagement
+# BSPWM-dotfiles :: save screenshots directly to the engagement evidence directory
 
 SCRIPT_NAME=${0##*/}
 
@@ -78,7 +78,7 @@ function menu_shot() {
 }
 
 function shot_area() {
-    # Uma captura interativa por vez; repetir Print não cria novos diálogos.
+    # One interactive capture at a time; repeated Print presses do not open more dialogs.
     exec 8>"${XDG_RUNTIME_DIR:-$STATE_DIR}/offsec-screenshot.lock"
     flock -n 8 || return 0
     local file result
@@ -86,10 +86,10 @@ function shot_area() {
 
     if command -v flameshot &>/dev/null; then
         ensure_flameshot || return 1
-        # flameshot dá anotação (seta, borrão, destaque) — o que o relatório pede
-        # O próprio Flameshot salva e copia após a confirmação, mantendo
-        # recorte, setas, texto e desenho disponíveis até pressionar Enter.
-        # Sem herdar o lock para o daemon persistente.
+        # Flameshot provides report annotations: arrows, blur, and highlights.
+        # It saves and copies after confirmation, keeping crop, arrow, text,
+        # and drawing tools available until Enter is pressed.
+        # Do not pass the lock to the persistent daemon.
         flameshot gui --path "$file" --clipboard 8>&- \
             >>"$STATE_DIR/screenshot.log" 2>&1
         result=$?
@@ -122,7 +122,7 @@ function flameshot_ready() {
 function ensure_flameshot() {
     exit_on_missing_tools gdbus
     flameshot_ready && return 0
-    # Inicia o servidor antes do editor, sem carregar o lock da captura.
+    # Start the server before the editor without passing the capture lock.
     flameshot >>"$STATE_DIR/screenshot.log" 2>&1 8>&- &
     local attempt
     for ((attempt=0; attempt<40; attempt++)); do

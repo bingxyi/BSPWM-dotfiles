@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: sobe a barra lateral do perfil ativo
-#   nyx    -> tint2 (painel vertical nativo do X11, leve)
-#   vesper -> eww   (widgets GTK com painéis expansíveis)
-# Se o motor do perfil não estiver instalado, cai no outro em vez de deixar
-# a sessão sem barra.
+# BSPWM-dotfiles :: start the active profile sidebar
+#   nyx    -> tint2 (lightweight native X11 vertical panel)
+#   vesper -> eww   (GTK widgets with expandable panels)
+# Fall back to the other backend if the selected one is unavailable.
 
 SCRIPT_NAME=${0##*/}
 
@@ -27,10 +26,10 @@ EOM
 function main() {
     local action="restart"
 
-    # O theme.sh chama 'bar.sh --restart &' em segundo plano. Duas trocas de
-    # tema seguidas fazem dois restarts se cruzarem: ambos matam o tint2, ambos
-    # esperam, e os dois sobem um — sobrando duas barras empilhadas e o dobro
-    # de strut reservado. O lock serializa: o segundo espera o primeiro acabar.
+    # theme.sh calls "bar.sh --restart &" in the background. Rapid theme changes
+    # can overlap: both restarts kill tint2, wait, and launch another instance,
+    # leaving stacked bars with twice the reserved strut.
+    # Serialize restarts so the second waits for the first to finish.
     exec 9>"${XDG_RUNTIME_DIR:-$STATE_DIR}/offsec-bar.lock"
     flock 9 || return 1
 
@@ -91,7 +90,7 @@ function start_tint2() {
         "$OFFSEC_DIR/bin/theme.sh" --render-only --apply "$(theme_get name catppuccin-mocha)" 9>&- || return 1
     fi
 
-    # 9>&- : sem isto o tint2 herda o lock e nenhum restart futuro entra.
+    # 9>&- prevents tint2 from inheriting the lock and blocking future restarts.
     setsid -f tint2 -c "$HOME/.config/tint2/tint2rc" >"$STATE_DIR/tint2.log" 2>&1 9>&-
     sleep 1
     if pgrep -x tint2 >/dev/null 2>&1; then
@@ -112,7 +111,7 @@ function start_eww() {
     screen=$(xrandr --listmonitors 2>/dev/null | awk '/\*/ {gsub(":", "", $1); print $1; exit}')
     [ -z "$screen" ] && screen=0
 
-    # O daemon também precisa fechar o lock: ele sobrevive ao lançador.
+    # The daemon must also close the lock because it outlives its launcher.
     eww -c "$EWW_CONFIG" daemon >"$STATE_DIR/eww.log" 2>&1 9>&- || return 1
     local attempt
     for ((attempt=0; attempt<60; attempt++)); do

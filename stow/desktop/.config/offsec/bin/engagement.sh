@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: gestão de engagements (estrutura, notas, contexto da sessão)
-# O engagement ativo alimenta a barra, o prompt do shell e o screenshot.sh.
+# BSPWM-dotfiles :: manage engagements (structure, notes, session context)
+# The active engagement feeds the bar, shell prompt, and screenshot.sh.
 
 SCRIPT_NAME=${0##*/}
 VERSION="1.0.0"

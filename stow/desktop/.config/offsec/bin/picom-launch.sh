@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Purpose: sobe o picom com a configuration certa para a versão instalada.
-#   picom >= 12  -> picom.conf       (animações nativas, sintaxe `rules`)
-#   picom <  12  -> picom-basic.conf (sem animações, sintaxe antiga)
-# Se a configuration escolhida falhar, cai na básica antes de desistir.
+# Purpose: start picom with a configuration suited to the installed version.
+#   picom >= 12 -> picom.conf       (native animations, "rules" syntax)
+#   picom <  12 -> picom-basic.conf (no animations, legacy syntax)
+# If the selected configuration fails, try the basic one before giving up.
 # Usage: picom-launch.sh [--check]
 
 SCRIPT_NAME=${0##*/}
@@ -67,7 +67,7 @@ function main() {
 function picom_major() {
     local raw
     raw=$(picom --version 2>/dev/null | head -n1)
-    # formatos vistos: "v12.5", "vgit-...", "picom v11.2"
+    # Observed formats: "v12.5", "vgit-...", "picom v11.2".
     printf '%s' "$raw" | grep -oE 'v[0-9]+' | head -n1 | tr -d 'v'
 }
 
@@ -84,9 +84,9 @@ function pick_config() {
 
 function start_picom() {
     local config="$1" pid
-    # O picom escreve avisos no stderr durante o arranque. Sem este
-    # redirecionamento eles herdam o stderr da sessao e podem aparecer na tela
-    # logo depois do login. O log fica em disco para quando forem uteis.
+    # picom writes startup warnings to stderr. Redirect them to a log
+    # so they do not inherit the session stderr and appear on screen
+    # immediately after login. Keep the log for troubleshooting.
     picom --config "$config" >"$LOG" 2>&1 9>&- &
     pid=$!
     sleep 2

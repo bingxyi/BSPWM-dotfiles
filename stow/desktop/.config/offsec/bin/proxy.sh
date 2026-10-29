@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: proxy de interceptação (Burp/ZAP/mitmproxy) e o que orbita ele
+# BSPWM-dotfiles :: interception proxy (Burp/ZAP/mitmproxy) and related tools
 
 SCRIPT_NAME=${0##*/}
 

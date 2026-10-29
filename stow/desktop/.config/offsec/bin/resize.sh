@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Purpose: move a divisória do nó na direção informada (tiled e floating)
+# Purpose: move the node boundary in the requested direction (tiled or floating)
 # Usage: resize.sh <west|south|north|east> [px] [node]
 #
-# A borda "da frente" é tentada primeiro (a janela cresce na direção); se não
-# houver vizinho desse lado, usa a borda oposta (a janela encolhe). Em ambos os
-# casos a divisória anda para o lado da seta. Em floating a primeira sempre vale.
+# Try the forward edge first to grow the window in the requested direction.
+# If there is no neighbor, use the opposite edge to shrink it. Both cases
+# move the boundary toward the arrow; floating windows use the first edge.
 
 DIR="${1:-}"
 STEP="${2:-40}"

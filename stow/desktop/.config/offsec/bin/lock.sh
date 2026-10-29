@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: bloqueia a sessão com o visual do tema ativo
+# BSPWM-dotfiles :: lock the session using the active theme
 #
-# Durante o bloqueio os monitores secundários são desligados via xrandr: o
-# greeter só desenha no primário, e o monitor vertical fica preto de verdade em
-# vez de exibir um retângulo esticado do lock screen.
+# Turn off secondary monitors through xrandr while locked.
+# The greeter draws only on the primary output; the portrait monitor stays
+# black instead of displaying a stretched lock screen.
 #
-# A restauração é feita por trap em EXIT/INT/TERM/HUP: se o bloqueador morrer,
-# for morto ou a sessão cair, o monitor volta. Nunca se sai daqui com um
-# monitor desligado.
+# Restore monitors through EXIT/INT/TERM/HUP traps if the locker exits,
+# is killed, or the session ends. Always restore disabled outputs.
 
 SCRIPT_NAME=${0##*/}
 
@@ -34,7 +33,7 @@ function primary_monitor() {
 function secondary_monitors() {
     local primary
     primary=$(primary_monitor)
-    # Sem primário definido não há como saber quem é secundário: não mexe em nada.
+    # Without a primary output, secondary outputs cannot be identified; leave them alone.
     [ -z "$primary" ] && return 0
     xrandr --query 2>/dev/null | awk '/ connected/ {print $1}' | grep -vxF "$primary"
 }
@@ -49,8 +48,8 @@ function monitors_off() {
     return 0
 }
 
-# monitors.sh é a única fonte de verdade da geometria (mesma regra do bspwmrc):
-# restaurar é reexecutá-lo, não reinventar as posições aqui.
+# monitors.sh owns the geometry, as in bspwmrc.
+# Restore it by rerunning that script rather than duplicating positions here.
 function monitors_restore() {
     [ "$(state_get lock_monitors_off 0)" = "1" ] || return 0
     if [ -x "$MONITORS_SH" ]; then

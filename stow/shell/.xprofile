@@ -1,32 +1,32 @@
 #!/bin/sh
-# ~/.xprofile — ambiente da sessão gráfica.
-# Lido pelo SDDM (via /usr/share/sddm/scripts/Xsession) E pelo ~/.xinitrc.
-# Tudo que precisa existir ANTES do WM subir mora aqui.
+# ~/.xprofile — graphical session environment.
+# Read by SDDM through /usr/share/sddm/scripts/Xsession and by ~/.xinitrc.
+# Set variables needed before the window manager starts here.
 
-# CRÍTICO: bspwm é não-reparenting. Sem isto, Burp/Ghidra/ZAP/JADX abrem
-# como janela cinza que nunca redesenha.
+# bspwm is non-reparenting. This prevents gray windows that never redraw
+# in Burp/Ghidra/ZAP/JADX.
 export _JAVA_AWT_WM_NONREPARENTING=1
 export AWT_TOOLKIT=XToolkit
 
-# Escala do Java fixa em 1 — evita Burp gigante no monitor 1440p
+# Fix Java scaling at 1 to avoid oversized Burp windows on 1440p monitors.
 export _JAVA_OPTIONS='-Dsun.java2d.uiScale=1'
 
-# Toolkits obedecendo o tema, sem puxar um DE inteiro
-# O tema de GTK/Qt/cursor vem do theme.sh (gtk-3.0/settings.ini + xsettingsd).
-# Um GTK_THEME aqui venceria os dois — por isso não se declara nenhum.
+# Apply toolkit themes without loading a full desktop environment.
+# theme.sh configures GTK/Qt/cursors through gtk-3.0/settings.ini and xsettingsd.
+# Leave GTK_THEME unset because it would override both.
 export XCURSOR_SIZE=24
 
-# XDG — mantém $HOME limpo e previsível
+# XDG — keep $HOME tidy and predictable.
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 
-# Scripts próprios no PATH
+# Add custom scripts to PATH.
 export PATH="$HOME/.local/bin:$PATH"
 
-# >>> offsec-dotfiles >>>
-# Bloco gerenciado pelo install.sh — edite ~/.config/offsec/env, não aqui.
+# >>> BSPWM-dotfiles >>>
+# Managed by install.sh; edit ~/.config/offsec/env instead.
 if [ -r "$HOME/.config/offsec/env" ]; then
     . "$HOME/.config/offsec/env"
 fi
-# <<< offsec-dotfiles <<<
+# <<< BSPWM-dotfiles <<<

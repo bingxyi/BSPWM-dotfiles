@@ -1,105 +1,166 @@
-# Arch Linux · bspwm rice
+# BSPWM-dotfiles · bspwm rice
 
-![Screenshot — substituir por docs/screenshot.png](docs/screenshot.png)
+An Arch Linux bspwm rice with two sidebar profiles, shared color palettes, and
+an application security workflow. Built with sxhkd, picom, rofi, Kitty, Zsh,
+Neovim, and optional SDDM integration.
 
-bspwm + sxhkd, tint2 (Nyx) ou Eww (Vesper), picom e temas compartilhados.
+## Features
 
-## Dependências
+- **Two desktop profiles:** Nyx uses a lightweight vertical tint2 panel;
+  Vesper uses an Eww sidebar. Both share the Eww control center.
+- **Coordinated themes:** apply a palette across the terminal, launcher,
+  notifications, panels, editor, GTK, window borders, and lock screen.
+- **Control center:** Wi-Fi, sound, brightness, notifications, power profiles,
+  keep-awake mode, calendar, and engagement context.
+- **AppSec tools:** active target and engagement tracking, proxy and VPN helpers,
+  evidence screenshots, and Neovim commands for notes and Semgrep results.
+- **Monitor support:** native display modes, vertical centering, portrait
+  wallpapers, and optional machine-specific overrides.
+- **Reversible installation:** GNU Stow symlinks, conflict backups, rollback on
+  failure, and preservation of personal theme, profile, and mouse settings.
 
-- Instalação: `git`, `stow`, `python` (3.10+), `bash`, `coreutils`, `util-linux`.
-- Sessão: `xorg-server`, `xorg-xinit`, `xorg-xrandr`, `xorg-xprop`,
-  `xorg-xset`, `xorg-xsetroot`, `xorg-setxkbmap`, `xorg-xdpyinfo`, `xdotool`,
-  `bspwm`, `sxhkd`, `picom`, `tint2`, `rofi`, `dunst`, `kitty`, `jq`.
-- Painéis: Eww com suporte X11 (AUR), `playerctl`, `python-gobject`,
-  `libnotify`, `network-manager-applet`, `blueman`, `polkit-gnome`, `wmctrl`.
-- Shell/editor: `zsh`, `neovim`, `starship`, `eza`, `bat`, `fd`, `fzf`,
-  `ripgrep`, `zoxide`, `zsh-autosuggestions`, `zsh-syntax-highlighting`.
-- Visual: `ttf-jetbrains-mono-nerd`, `inter-font`, `papirus-icon-theme`,
-  `xsettingsd`; temas GTK/cursor Catppuccin são opcionais (fallback Adwaita).
-- Recursos opcionais: `feh`, `imagemagick`, `betterlockscreen` ou `i3lock`,
-  `brightnessctl`, `xclip`, Greenclip (AUR), `pavucontrol`, `power-profiles-daemon`,
-  `firefox`, `thunar`, `yazi`, `openvpn`, `flameshot`, `ffmpeg`.
-- Verificação adicional: `shellcheck`, `xorg-server-xephyr` ou `xorg-server-xvfb`.
-  Nenhum pacote é removido automaticamente; a instalação não altera pacotes do sistema.
+## Dependencies
 
-## Instalação
+Install the tools needed for the features you plan to use. The dotfile installer
+does not install or remove system packages.
+
+| Component | Packages and tools |
+| --- | --- |
+| Installer | `git`, `stow`, Python 3.10+, `bash`, `coreutils`, `util-linux` |
+| X11 session | `xorg-server`, `xorg-xinit`, `xorg-xrandr`, `xorg-xprop`, `xorg-xset`, `xorg-xsetroot`, `xorg-setxkbmap`, `xorg-xdpyinfo`, `xdotool` |
+| Desktop | `bspwm`, `sxhkd`, `picom`, `tint2`, `rofi`, `dunst`, `kitty`, `jq` |
+| Panels and integration | Eww with X11 support (AUR), `playerctl`, `python-gobject`, `libnotify`, `network-manager-applet`, `blueman`, `polkit-gnome`, `wmctrl` |
+| Shell and editor | `zsh`, `neovim`, `starship`, `eza`, `bat`, `fd`, `fzf`, `ripgrep`, `zoxide`, `zsh-autosuggestions`, `zsh-syntax-highlighting` |
+| Fonts and appearance | `ttf-jetbrains-mono-nerd`, `inter-font`, `papirus-icon-theme`, `xsettingsd` |
+| Optional features | `feh`, `imagemagick`, `betterlockscreen` or `i3lock`, `brightnessctl`, `xclip`, Greenclip (AUR), `pavucontrol`, `power-profiles-daemon`, `firefox`, `thunar`, `yazi`, `openvpn`, `flameshot`, `ffmpeg` |
+
+Catppuccin GTK and cursor themes are optional; palettes provide Adwaita fallbacks.
+
+## Installation
+
+Clone the repository to a permanent location: installed static files link back
+to this checkout.
 
 ```sh
-git clone https://github.com/SEU_USUARIO/offsec-dotfiles.git ~/dotfiles
-cd ~/dotfiles
-sudo pacman -S --needed stow python
+git clone https://github.com/bingxyi/BSPWM-dotfiles.git ~/BSPWM-dotfiles
+cd ~/BSPWM-dotfiles
+sudo pacman -S --needed git stow python
 ./install.sh --dry-run
 ./install.sh
 ```
 
-O instalador usa GNU Stow com `--no-folding`, mantém outros arquivos nas pastas
-compartilhadas e salva conflitos, inclusive links quebrados, em
-`~/.local/state/offsec-dotfiles/backups/`. Cada transação imprime o comando de
-restauração. Uma falha reverte os arquivos gerenciados; restaurar depois de
-editar arquivos instalados é recusado para preservar essas edições.
+Install the session dependencies before logging into bspwm. Select bspwm in your
+display manager, or use `startx` with the installed `.xinitrc`.
+
+The installer deploys the desktop, shell, and editor packages with GNU Stow's
+`--no-folding` option, keeping unrelated files in shared directories. It backs up
+conflicts, including broken symlinks, under
+`~/.local/state/offsec-dotfiles/backups/` and prints the exact restore command.
+Failed deployments roll back managed files. Later restoration refuses to
+overwrite files changed since installation.
 
 ```sh
-./install.sh --restore /CAMINHO/DO/BACKUP
-./install.sh --target /CAMINHO/DE/UM/HOME/DE/TESTE
+./install.sh --restore /PATH/TO/BACKUP
+./install.sh --target /PATH/TO/EXISTING/TEST/HOME
 ```
 
-Os arquivos estáticos ficam ligados ao repositório. Arquivos gerados pelas
-paletas são arquivos normais, não symlinks: cada instalação os recria com
-backup. Estado pessoal (tema escolhido, perfil e mouse) é preservado.
+Palette-generated files are regular files recreated with backups during
+installation. Existing personal settings for the selected theme, profile, and
+mouse are preserved. The internal configuration directory remains
+`~/.config/offsec/`.
 
-## Uso e atualizações
+## Everyday use
+
+Open the theme and profile menus from a terminal:
 
 ```sh
-./sync.sh                              # git pull --ff-only + instalação + renderização
 ~/.config/offsec/bin/theme.sh --menu
 ~/.config/offsec/bin/profile.sh --menu
+```
+
+Nyx is the initial profile. Switch to Vesper for the Eww sidebar, or select a
+profile directly:
+
+```sh
+~/.config/offsec/bin/profile.sh --set vesper
+~/.config/offsec/bin/profile.sh --set nyx
+```
+
+Enable the optional user service for notification retention:
+
+```sh
 systemctl --user daemon-reload
 systemctl --user enable --now offsec-notification-retention.service
 ```
 
-Configure um remoto/upstream antes de usar `sync.sh`. Ele recusa alterações
-locais pendentes e conflitos de histórico; não usa reset/force. Edite os
-arquivos estáticos no repositório ou nos symlinks: as alterações são imediatas.
-Após uma atualização, o próximo login usa os scripts novos. Para recarregar
-explicitamente a sessão atual, `bspc wm -r` e `Super+Escape` recarregam WM/atalhos.
-O compositor já em execução é preservado; sua nova configuração vale no próximo login.
+### Keyboard shortcuts
 
-Monitores usam modos nativos e centralização vertical. Ajustes por máquina:
+`Super` is the main modifier. Press `Super+/` for the complete shortcut list.
+
+| Shortcut | Action |
+| --- | --- |
+| `Super+Return` | Open Kitty |
+| `Super+D` | Open the application launcher |
+| `Super+C` | Toggle the control center |
+| `Super+O` | Open the AppSec tools menu |
+| `Super+1` through `Super+0` | Focus a workspace |
+| `Super+H/J/K/L` | Move window focus |
+| `Super+Shift+H/J/K/L` | Move the focused window |
+| `Super+Comma` / `Super+Period` | Switch monitors |
+| `Super+Alt+Period` | Open the emoji picker |
+| `Super+Alt+M` | Open mouse preferences |
+| `Print` | Select and annotate a screenshot |
+| `Super+Escape` | Reload sxhkd shortcuts |
+
+### Themes, monitors, and personal files
+
+Edit palettes in `stow/desktop/.config/offsec/themes/` and generated-file sources
+in `stow/desktop/.config/offsec/templates/`. Session variables live in
+`stow/desktop/.config/offsec/env`.
+
+For monitor overrides, inspect your outputs and copy the example:
 
 ```sh
+xrandr --query
 cp examples/monitors.local.sh ~/.config/bspwm/monitors.local.sh
 ```
 
-Edite os nomes/modos antes de usar esse exemplo. `Super+Alt+period` abre emojis;
-`Super+comma/period` alterna monitores. Wallpapers ficam em `~/Pictures/wallpapers`
-e credenciais VPN em `~/vpn`; ambos ficam fora do Git. Sem wallpaper, usa cor sólida.
-O launcher Burp exige a instalação licenciada local já existente em
-`~/Burpsuite-Professional`; nenhum JAR ou licença é distribuído aqui.
+Adjust output names, modes, refresh rates, and rotation for your hardware before
+applying the configuration. The local override stays outside Git.
 
-Scripts de integração com SDDM, energia e ajustes do sistema estão em
-`~/.config/offsec/system/`; são opcionais e exigem execução separada com sudo.
-A instalação principal não os executa, não reinicia serviços e não muda o boot.
-O avatar de login é opcional (`~/.config/offsec/login/avatar.png`, fora do Git).
-Os fontes SilentSDDM mantêm as licenças em seu diretório.
+Wallpapers belong in `~/Pictures/wallpapers`, VPN credentials in `~/vpn`, and
+engagements in `~/engagements`. These personal files remain outside the
+repository. Without a wallpaper, the desktop uses the theme's solid background.
 
-## Estrutura e validação
+The Burp Suite Professional launcher expects your existing licensed installation
+in `~/Burpsuite-Professional`. This repository does not distribute a JAR or license.
 
-```text
-stow/desktop/  # WM, painéis, compositor, temas e scripts
-stow/shell/    # zsh e inicialização X11
-stow/editor/   # Neovim
-defaults/     # estado inicial copiado uma vez
-scripts/      # instalador e verificador
-tests/        # regressões e transações de instalação
-docs/         # auditoria e screenshot a adicionar
-```
+## Updates
+
+With a configured remote and upstream branch, run:
 
 ```sh
-python3 scripts/check.py
-python3 -m unittest discover -s tests -v
-git add .
-git commit -m "feat: initial bspwm rice structure"
+cd ~/BSPWM-dotfiles
+./sync.sh
 ```
 
-Veja [docs/audit.md](docs/audit.md) para o escopo dos testes e as limitações
-da validação gráfica neste ambiente.
+The script performs `git pull --ff-only`, redeploys the packages, and renders the
+theme templates. It refuses pending local changes and divergent history. Commit
+or stash edits before updating.
+
+Changes to symlinked static files take effect as their applications read them.
+New session scripts run at the next login. To reload bspwm explicitly, run
+`bspc wm -r`; use `Super+Escape` to reload sxhkd. A running compositor is kept
+alive, so its updated configuration takes effect at the next login.
+
+## Optional system integration
+
+SDDM, system editor, power, and performance helpers are installed under
+`~/.config/offsec/system/`. Review the relevant script before running it
+separately with `sudo`. The main dotfile installer does not invoke these helpers,
+restart system services, or change boot settings.
+
+A custom login avatar can be placed at `~/.config/offsec/login/avatar.png`;
+it is excluded from Git. The bundled SilentSDDM sources retain their upstream
+documentation, attribution, and licenses in
+`stow/desktop/.config/offsec/login/silent-offsec/`.

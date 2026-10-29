@@ -1,6 +1,6 @@
--- offsec-dotfiles :: neovim
--- Objetivo: comodidade de IDE (completar com Tab, diagnósticos, refactor, debug)
--- sem abrir mão da velocidade. Tudo carregado sob demanda pelo lazy.nvim.
+-- BSPWM-dotfiles :: neovim
+-- IDE conveniences (Tab completion, diagnostics, refactoring, debugging)
+-- with fast startup. lazy.nvim loads everything on demand.
 
 require("config.options")
 require("config.lazy")

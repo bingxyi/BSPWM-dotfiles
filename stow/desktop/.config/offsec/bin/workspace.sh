@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: foco/envio de workspace tolerante ao layout do monitors.sh
-# Se os desktops têm nome numérico, usa o nome. Se têm nome customizado,
-# cai para o índice dentro do monitor focado. Nunca escreve em monitors.sh.
+# BSPWM-dotfiles :: focus/send workspaces with any monitors.sh layout
+# Use numeric desktop names when available; otherwise use the desktop index
+# on the focused monitor. Never write to monitors.sh.
 
 SCRIPT_NAME=${0##*/}
 

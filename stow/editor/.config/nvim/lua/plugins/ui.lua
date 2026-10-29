@@ -1,5 +1,5 @@
 return {
-  -- temas: os quatro do theme.sh ficam disponíveis para troca instantânea
+  -- Keep theme.sh color schemes available for immediate switching.
   {
     "catppuccin/nvim",
     name = "catppuccin",
@@ -97,20 +97,20 @@ return {
       preset = "modern",
       spec = {
         { "<leader>b", group = "buffer" },
-        { "<leader>c", group = "código" },
-        { "<leader>f", group = "buscar" },
+        { "<leader>c", group = "Code" },
+        { "<leader>f", group = "Find" },
         { "<leader>g", group = "git" },
         { "<leader>m", group = "Markdown" },
         { "<leader>h", group = "http (kulala)" },
         { "<leader>s", group = "search" },
-        { "<leader>t", group = "terminal/teste" },
+        { "<leader>t", group = "Terminal/test" },
         { "<leader>u", group = "toggles" },
         { "<leader>x", group = "appsec/payloads" },
         { "<leader>d", group = "debug" },
       },
     },
     keys = {
-      { "<leader>?", function() require("which-key").show({ global = false }) end, desc = "atalhos do buffer" },
+      { "<leader>?", function() require("which-key").show({ global = false }) end, desc = "Buffer keybindings" },
     },
   },
 
@@ -134,17 +134,17 @@ return {
       }
 
       dashboard.section.buttons.val = {
-        dashboard.button("f", "  buscar arquivo", "<cmd>Telescope find_files<CR>"),
-        dashboard.button("g", "  buscar texto", "<cmd>Telescope live_grep<CR>"),
-        dashboard.button("r", "  recentes", "<cmd>Telescope oldfiles<CR>"),
-        dashboard.button("e", "  engagement ativo", "<cmd>OffsecEngagement<CR>"),
-        dashboard.button("n", "  nova nota", "<cmd>enew<CR>"),
-        dashboard.button("c", "  configuração", "<cmd>e ~/.config/nvim/init.lua<CR>"),
+        dashboard.button("f", "  Find file", "<cmd>Telescope find_files<CR>"),
+        dashboard.button("g", "  Find text", "<cmd>Telescope live_grep<CR>"),
+        dashboard.button("r", "  Recent files", "<cmd>Telescope oldfiles<CR>"),
+        dashboard.button("e", "  Active engagement", "<cmd>OffsecEngagement<CR>"),
+        dashboard.button("n", "  New note", "<cmd>enew<CR>"),
+        dashboard.button("c", "  Configuration", "<cmd>e ~/.config/nvim/init.lua<CR>"),
         dashboard.button("l", "󰒲  lazy", "<cmd>Lazy<CR>"),
-        dashboard.button("q", "  sair", "<cmd>qa<CR>"),
+        dashboard.button("q", "  Quit", "<cmd>qa<CR>"),
       }
 
-      dashboard.section.footer.val = "tema: " .. (vim.g.offsec_theme or "catppuccin-mocha")
+      dashboard.section.footer.val = "Theme: " .. (vim.g.offsec_theme or "catppuccin-mocha")
       dashboard.opts.layout[1].val = 6
       alpha.setup(dashboard.opts)
     end,

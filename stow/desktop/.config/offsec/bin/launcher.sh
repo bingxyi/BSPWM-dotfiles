@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Purpose: lançador de aplicativos (rofi drun) com o tema ativo
+# Purpose: application launcher (rofi drun) using the active theme
 # Usage: launcher.sh
 
 ROFI_THEME="$HOME/.config/rofi/themes/offsec.rasi"

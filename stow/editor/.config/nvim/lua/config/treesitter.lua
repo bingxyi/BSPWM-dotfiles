@@ -21,10 +21,10 @@ function M.setup()
       end
       vim.keymap.set({ 'n', 'x' }, '<C-Space>', function()
         vim.treesitter.select('parent')
-      end, { buffer = buf, desc = 'Expandir seleção sintática' })
+      end, { buffer = buf, desc = 'Expand syntax selection' })
       vim.keymap.set('x', '<BS>', function()
         vim.treesitter.select('child')
-      end, { buffer = buf, desc = 'Reduzir seleção sintática' })
+      end, { buffer = buf, desc = 'Shrink syntax selection' })
     elseif available[lang] and not pending[lang] then
       pending[lang] = true
       ts.install({ lang }, { max_jobs = 2 }):await(function()

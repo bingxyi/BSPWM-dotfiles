@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: motor de temas
-# Uma definição de cor em ~/.config/offsec/themes/*.conf vira, em um comando,
-# kitty + rofi + dunst + tint2 + eww + nvim + GTK + bordas do bspwm + lock.
+# BSPWM-dotfiles :: theme engine
+# Apply a palette from ~/.config/offsec/themes/*.conf to kitty, rofi, dunst,
+# tint2, Eww, Neovim, GTK, bspwm borders, and the lock screen in one command.
 
 DEPENDENCIES=(sed awk)
 SCRIPT_NAME=${0##*/}
@@ -189,7 +189,7 @@ function reload_bspwm_colors() {
 }
 
 function reload_kitty() {
-    # kitty recarrega a configuração inteira ao receber SIGUSR1 (sem piscar)
+    # kitty reloads its full configuration on SIGUSR1 without flickering.
     pkill -USR1 -x kitty 2>/dev/null
     return 0
 }
@@ -232,7 +232,7 @@ function reload_bar() {
     return 0
 }
 
-# Cada tema recupera sua própria escolha, ou seu wallpaper padrão.
+# Restore each theme's wallpaper choice, or use its default wallpaper.
 function set_theme_wallpaper() {
     "$OFFSEC_DIR/bin/wallpaper.sh" --restore
 }

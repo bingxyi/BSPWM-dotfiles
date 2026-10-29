@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: central de notificações
+# BSPWM-dotfiles :: notification center
 
 DEPENDENCIES=(dunstctl)
 SCRIPT_NAME=${0##*/}
@@ -65,9 +65,9 @@ function main() {
     esac
 }
 
-# A central de controle hospeda as notificações nos dois perfis, então o
-# toggle abre o painel eww sempre que o eww existir. A lista em rofi fica
-# como plano B para quando o eww não estiver instalado.
+# Both profiles host notifications in the control center, so toggling opens
+# the Eww panel whenever Eww is available.
+# Use the rofi list as a fallback when Eww is not installed.
 function toggle_center() {
     if command -v eww &>/dev/null && [ -x "$OFFSEC_DIR/bin/control.sh" ]; then
         "$OFFSEC_DIR/bin/control.sh" --toggle
@@ -102,7 +102,7 @@ function build_list() {
 function clear_all() {
     dunstctl close-all 2>/dev/null
     dunstctl history-clear 2>/dev/null
-    # Compartilha o lock do escritor para não perder uma notificação nova.
+    # Share the writer lock to avoid losing a newly received notification.
     (
         exec 8>"$STATE_DIR/notifications.lock"
         flock 8

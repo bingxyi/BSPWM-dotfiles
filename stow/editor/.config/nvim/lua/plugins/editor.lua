@@ -14,17 +14,17 @@ return {
       "nvim-telescope/telescope-ui-select.nvim",
     },
     keys = {
-      { "<C-p>", "<cmd>Telescope find_files<CR>", desc = "buscar arquivos" },
-      { "<leader>ff", "<cmd>Telescope find_files<CR>", desc = "buscar arquivos" },
-      { "<leader>fg", "<cmd>Telescope live_grep<CR>", desc = "grep no projeto" },
+      { "<C-p>", "<cmd>Telescope find_files<CR>", desc = "Find files" },
+      { "<leader>ff", "<cmd>Telescope find_files<CR>", desc = "Find files" },
+      { "<leader>fg", "<cmd>Telescope live_grep<CR>", desc = "Grep project" },
       { "<leader>fb", "<cmd>Telescope buffers<CR>", desc = "buffers" },
-      { "<leader>fr", "<cmd>Telescope oldfiles<CR>", desc = "recentes" },
-      { "<leader>fh", "<cmd>Telescope help_tags<CR>", desc = "ajuda" },
-      { "<leader>fk", "<cmd>Telescope keymaps<CR>", desc = "atalhos" },
-      { "<leader>fd", "<cmd>Telescope diagnostics<CR>", desc = "diagnósticos" },
-      { "<leader>fs", "<cmd>Telescope lsp_document_symbols<CR>", desc = "símbolos do arquivo" },
-      { "<leader>fS", "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", desc = "símbolos do projeto" },
-      { "<leader>fw", "<cmd>Telescope grep_string<CR>", desc = "grep da palavra sob o cursor" },
+      { "<leader>fr", "<cmd>Telescope oldfiles<CR>", desc = "Recent files" },
+      { "<leader>fh", "<cmd>Telescope help_tags<CR>", desc = "Help" },
+      { "<leader>fk", "<cmd>Telescope keymaps<CR>", desc = "Keybindings" },
+      { "<leader>fd", "<cmd>Telescope diagnostics<CR>", desc = "Diagnostics" },
+      { "<leader>fs", "<cmd>Telescope lsp_document_symbols<CR>", desc = "Document symbols" },
+      { "<leader>fS", "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", desc = "Workspace symbols" },
+      { "<leader>fw", "<cmd>Telescope grep_string<CR>", desc = "Grep word under cursor" },
       { "<leader>fc", "<cmd>Telescope git_commits<CR>", desc = "commits" },
     },
     opts = function()
@@ -90,7 +90,7 @@ return {
           ["Y"] = function(state)
             local node = state.tree:get_node()
             vim.fn.setreg("+", node.path, "c")
-            vim.notify("copiado: " .. node.path)
+            vim.notify("Copied: " .. node.path)
           end,
         },
       },
@@ -141,12 +141,12 @@ return {
         local function map(mode, lhs, rhs, desc)
           vim.keymap.set(mode, lhs, rhs, { buffer = buffer, desc = desc })
         end
-        map("n", "]h", gs.next_hunk, "próximo hunk")
-        map("n", "[h", gs.prev_hunk, "hunk anterior")
+        map("n", "]h", gs.next_hunk, "Next hunk")
+        map("n", "[h", gs.prev_hunk, "Previous hunk")
         map("n", "<leader>gs", gs.stage_hunk, "stage hunk")
         map("n", "<leader>gr", gs.reset_hunk, "reset hunk")
         map("n", "<leader>gp", gs.preview_hunk, "preview hunk")
-        map("n", "<leader>gb", function() gs.blame_line({ full = true }) end, "blame da linha")
+        map("n", "<leader>gb", function() gs.blame_line({ full = true }) end, "Blame line")
         map("n", "<leader>gd", gs.diffthis, "diff")
       end,
     },
@@ -157,8 +157,8 @@ return {
     cmd = "Trouble",
     opts = { focus = true },
     keys = {
-      { "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", desc = "diagnósticos (projeto)" },
-      { "<leader>xd", "<cmd>Trouble diagnostics toggle filter.buf=0<CR>", desc = "diagnósticos (arquivo)" },
+      { "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", desc = "Workspace diagnostics" },
+      { "<leader>xd", "<cmd>Trouble diagnostics toggle filter.buf=0<CR>", desc = "Buffer diagnostics" },
       { "<leader>xq", "<cmd>Trouble qflist toggle<CR>", desc = "quickfix" },
       { "<leader>xl", "<cmd>Trouble loclist toggle<CR>", desc = "location list" },
       { "<leader>xt", "<cmd>Trouble todo toggle<CR>", desc = "todos" },
@@ -179,7 +179,7 @@ return {
       },
     },
     keys = {
-      { "<leader>st", "<cmd>TodoTelescope<CR>", desc = "todos/vulns no projeto" },
+      { "<leader>st", "<cmd>TodoTelescope<CR>", desc = "Project TODOs/vulnerabilities" },
     },
   },
 
@@ -226,7 +226,7 @@ return {
     "akinsho/toggleterm.nvim",
     keys = {
       { "<C-\\>", "<cmd>ToggleTerm<CR>", desc = "terminal" },
-      { "<leader>tf", "<cmd>ToggleTerm direction=float<CR>", desc = "terminal flutuante" },
+      { "<leader>tf", "<cmd>ToggleTerm direction=float<CR>", desc = "Floating terminal" },
       { "<leader>tg", "<cmd>lua _lazygit_toggle()<CR>", desc = "lazygit" },
     },
     opts = {
@@ -243,14 +243,14 @@ return {
       function _lazygit_toggle()
         lazygit:toggle()
       end
-      vim.keymap.set("t", "<Esc><Esc>", [[<C-\><C-n>]], { desc = "sair do modo terminal" })
+      vim.keymap.set("t", "<Esc><Esc>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
     end,
   },
 
   {
     "stevearc/oil.nvim",
     cmd = "Oil",
-    keys = { { "-", "<cmd>Oil<CR>", desc = "editar o diretório como buffer" } },
+    keys = { { "-", "<cmd>Oil<CR>", desc = "Edit directory as a buffer" } },
     opts = {
       default_file_explorer = false,
       view_options = { show_hidden = true },

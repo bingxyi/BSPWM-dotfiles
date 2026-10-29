@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: coluna de workspaces do perfil Nyx (executor do tint2)
-# Sempre imprime exatamente 10 linhas (execp_continuous = 10), uma por
-# workspace, com o ícone do papel daquele workspace no fluxo de AppSec.
-# Não renomeia desktops: o monitors.sh continua sendo o dono dos nomes.
+# BSPWM-dotfiles :: Nyx workspace column (tint2 executor)
+# Always print exactly ten lines (execp_continuous = 10), one per workspace,
+# with an icon for its role in the AppSec workflow.
+# Do not rename desktops; monitors.sh owns their names.
 
 SCRIPT_NAME=${0##*/}
 
@@ -10,8 +10,8 @@ SCRIPT_NAME=${0##*/}
 . "$HOME/.config/offsec/bin/lib.sh"
 
 ICONS=("󰞷" "󰈹" "󰯄" "󰅴" "󰉋" "󰅩" "󰠮" "󰝚" "󰢹" "󰀻")
-# Só glifos Material Design (U+F0xxx): os Font Awesome legado (U+F0xx-U+F2xx)
-# saem em branco nesta build da JetBrainsMono Nerd Font.
+# Use Material Design glyphs (U+F0xxx); legacy Font Awesome glyphs
+# (U+F0xx–U+F2xx) render blank in this JetBrainsMono Nerd Font build.
 LABELS=("terminal" "web" "proxy/burp" "code" "files" "network" "notes" "media" "vm/remote" "miscellaneous")
 
 function usage() {
@@ -83,8 +83,8 @@ function render() {
             color="$free_col"
         fi
 
-        # Cor sozinha não basta num painel estreito: o workspace focado
-        # também cresce e engrossa, e os vazios encolhem.
+        # Color alone is insufficient on a narrow panel: make the focused workspace
+        # larger and bolder, and shrink empty workspaces.
         local size weight
         if [ "$name" = "$focused" ]; then
             size="x-large"

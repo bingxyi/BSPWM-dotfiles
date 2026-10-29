@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: biblioteca comum dos scripts
-# Uso: . "$HOME/.config/offsec/bin/lib.sh"
+# BSPWM-dotfiles :: shared script library
+# Usage: . "$HOME/.config/offsec/bin/lib.sh"
 
 OFFSEC_DIR="$HOME/.config/offsec"
 THEME_FILE="$OFFSEC_DIR/current-theme.conf"

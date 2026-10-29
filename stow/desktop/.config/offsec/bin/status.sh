@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: blocos de status compactos para os executores do tint2
-# Cada bloco imprime poucas linhas de glifos — a barra tem 46px de largura.
+# BSPWM-dotfiles :: compact status blocks for tint2 executors
+# Each block prints a few glyph lines to fit the 46px bar.
 
 SCRIPT_NAME=${0##*/}
 

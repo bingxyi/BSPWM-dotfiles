@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# offsec-dotfiles :: perfil de energia (leitura sempre; escrita se o helper existir)
+# BSPWM-dotfiles :: power profile (always readable; writable with a helper)
 #
-# Ordem de preferência:
-#   1. powerprofilesctl (power-profiles-daemon) — autorização via polkit
-#   2. /usr/local/bin/offsec-powerprofile via sudo -n — argumentos fixos
-#   3. somente leitura, avisando o que falta instalar
+# Backend preference:
+#   1. powerprofilesctl (power-profiles-daemon), authorized through polkit
+#   2. /usr/local/bin/offsec-powerprofile through sudo -n, with fixed arguments
+#   3. read-only mode with instructions for installing the missing backend
 #
-# A leitura nunca depende de privilégio: a barra sempre mostra o estado real.
+# Reading never requires privileges: the bar always shows the current state.
 
 SCRIPT_NAME=${0##*/}
 
@@ -95,15 +95,15 @@ function set_profile() {
 }
 
 # ---------------------------------------------------------------------------
-# GPU NVIDIA: o perfil de energia também manda no PowerMizer.
-#   performance -> 1 (prefere desempenho máximo)
-#   demais      -> 0 (adaptativo, o padrão do driver)
+# NVIDIA GPU: the power profile also controls PowerMizer.
+#   performance -> 1 (prefer maximum performance)
+#   other       -> 0 (adaptive, the driver default)
 #
-# Atenção: em alguns drivers a escrita é aceita e silenciosamente descartada —
-# o nvidia-settings responde "assigned value 1" e a leitura seguinte devolve 0.
-# Quando isso acontece falta "Coolbits" no Xorg; veja
-# ~/.config/offsec/system/install-performance.sh. Por isso conferimos a
-# leitura em vez de confiar no código de saída.
+# Some drivers accept writes but silently discard them: nvidia-settings
+# reports "assigned value 1", yet the next read returns 0.
+# This usually means Xorg lacks Coolbits; see
+# ~/.config/offsec/system/install-performance.sh. Read the value back
+# instead of relying on the exit status.
 # ---------------------------------------------------------------------------
 function gpu_powermizer() {
     command -v nvidia-settings >/dev/null 2>&1 || return 0
@@ -125,15 +125,15 @@ function gpu_powermizer() {
     state_set gpu_powermizer "$want"
 }
 
-# 1 quando o driver recusou a última escrita no PowerMizer.
+# 1 when the driver rejected the last PowerMizer write.
 function gpu_blocked() { [ "$(state_get gpu_powermizer_blocked 0)" = 1 ]; }
 
 function announce() {
     state_set power_profile "$1"
     gpu_powermizer "$1"
     notify "Power profile" "$(label_for "$1")" "$(icon_name_for "$1")" low
-    # tint2 não trata RTMIN+3: esse sinal encerra a barra.
-    # Os executores já atualizam o estado pelos intervalos do tint2rc.
+    # tint2 does not handle RTMIN+3; that signal terminates the bar.
+    # Executors already refresh status at the intervals configured in tint2rc.
     eww_refresh
 }
 
