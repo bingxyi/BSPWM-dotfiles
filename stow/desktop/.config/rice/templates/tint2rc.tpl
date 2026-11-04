@@ -103,8 +103,8 @@ execp_background_id = 0
 execp_tooltip = Click: workspace selector · scroll to switch
 execp_lclick_command = {{home}}/.config/rice/bin/ws-tint2.sh --menu
 execp_rclick_command = bspc desktop -l next
-execp_uwheel_command = bspc desktop -f prev.local
-execp_dwheel_command = bspc desktop -f next.local
+execp_uwheel_command = {{home}}/.config/rice/bin/motion.py --focus prev.local
+execp_dwheel_command = {{home}}/.config/rice/bin/motion.py --focus next.local
 
 #---------------------------------------------
 # TASKBAR (windows on the current desktop)

@@ -13,12 +13,13 @@ SCRIPT_NAME=${0##*/}
 LOG="$STATE_DIR/picom.log"
 CONFIG_MODERN="$HOME/.config/picom/picom.conf"
 CONFIG_BASIC="$HOME/.config/picom/picom-basic.conf"
+CONFIG_FTLABS="$HOME/.config/picom/picom-ftlabs.conf"
 
 function usage() {
     cat <<EOM
 
 Start picom with a configuration supported by the installed version.
-usage: ${SCRIPT_NAME} [--check|--help]
+usage: ${SCRIPT_NAME} [--check|--restart|--help]
     --check   Report version and selected configuration
 
 EOM
@@ -26,12 +27,14 @@ EOM
 }
 
 function main() {
+    local restart=0
     case "${1:-}" in
     -c | --check)
         report_choice
         exit 0
         ;;
     -h | --help) usage ;;
+    --restart) restart=1 ;;
     "") ;;
     *)
         echo "Error: unknown option '$1'" >&2
@@ -46,7 +49,16 @@ function main() {
 
     exec 9>"${XDG_RUNTIME_DIR:-$STATE_DIR}/rice-picom.lock"
     flock 9 || return 1
-    pgrep -u "$UID" -x picom >/dev/null && return 0
+    if [ "$restart" -eq 1 ]; then
+        pkill -u "$UID" -x picom 2>/dev/null || true
+        local attempt
+        for ((attempt=0;attempt<50;attempt++)); do
+            pgrep -u "$UID" -x picom >/dev/null || break
+            sleep .02
+        done
+    else
+        pgrep -u "$UID" -x picom >/dev/null && return 0
+    fi
 
     local config
     config=$(pick_config)
@@ -73,6 +85,10 @@ function picom_major() {
 
 function pick_config() {
     local major
+    # FT-Labs uses vgit-*; a missing numeric major must not disable its engine.
+    if picom --help 2>&1 | grep -q -- '--animation-stiffness-in-tag'; then
+        if [ -r "$CONFIG_FTLABS" ]; then printf '%s' "$CONFIG_FTLABS"; return 0; fi
+    fi
     major=$(picom_major)
 
     if [ -n "$major" ] && [ "$major" -ge 12 ] 2>/dev/null && [ -r "$CONFIG_MODERN" ]; then
@@ -102,7 +118,7 @@ function report_choice() {
     printf 'major version ...... %s\n' "${major:-unknown}"
     printf 'configuration ...... %s\n' "$config"
     if [ "$config" = "$CONFIG_BASIC" ]; then
-        printf '\nNo animations: picom 12+ from the official repository supports them.\n'
+        printf '\nCompatibility fallback; no supported native animation engine was selected.\n'
         printf 'Update with: sudo pacman -S picom\n'
     fi
 }

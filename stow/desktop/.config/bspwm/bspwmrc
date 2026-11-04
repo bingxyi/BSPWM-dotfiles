@@ -39,9 +39,9 @@ function load_env() {
 function setup_monitors() {
     # Leave monitors.sh untouched: it is the sole source of monitor geometry.
     if [ -x "$CONFIG_DIR/bspwm/monitors.sh" ]; then
-        "$CONFIG_DIR/bspwm/monitors.sh"
+        "$CONFIG_DIR/bspwm/monitors.sh" || return 1
     elif [ -r "$CONFIG_DIR/bspwm/monitors.sh" ]; then
-        bash "$CONFIG_DIR/bspwm/monitors.sh"
+        bash "$CONFIG_DIR/bspwm/monitors.sh" || return 1
     fi
 
     # Resolve the bar monitor after monitors.sh sets the RandR primary output.
@@ -168,6 +168,7 @@ function setup_rules() {
 
     # Float and center utility windows.
     bspc rule -a RiceMouse state=floating center=on
+    bspc rule -a RiceTools state=floating center=on
     bspc rule -a Pavucontrol state=floating center=on rectangle=900x600+0+0
     bspc rule -a Blueman-manager state=floating center=on
     bspc rule -a Lxappearance state=floating center=on
@@ -199,9 +200,15 @@ function setup_rules() {
 }
 
 function start_services() {
-    run_once sxhkd
+    # The watcher holds its own session lock; it sleeps on RandR events.
+    mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}"
+    if grep -q 'monitor-layout.py' "$CONFIG_DIR/bspwm/monitors.sh"; then
+        "$CONFIG_DIR/bspwm/monitors.sh" --watch >>"${XDG_STATE_HOME:-$HOME/.local/state}/rice-monitors.log" 2>&1 &
+    fi
+    "$RICE_DIR/bin/hotkeys.py" &
     run_once xsettingsd
     run_once "$CONFIG_DIR/rice/bin/picom-launch.sh"
+    run_once "$RICE_DIR/bin/motion.py" --serve
     run_once dunst
     run_once greenclip daemon
     run_once nm-applet --indicator
@@ -211,7 +218,9 @@ function start_services() {
     # Restore persistent panel preferences after starting session services.
     "$RICE_DIR/bin/session-restore.sh" &
     mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/rice"
-    "$RICE_DIR/bin/mouse-settings.py" --watch >>"${XDG_DATA_HOME:-$HOME/.local/share}/rice/mouse.log" 2>&1 &
+    if command -v xinput >/dev/null 2>&1; then
+        "$RICE_DIR/bin/mouse-settings.py" --watch >>"${XDG_DATA_HOME:-$HOME/.local/share}/rice/mouse.log" 2>&1 &
+    fi
 
     # Wallpaper saved by wallpaper.sh.
     "$RICE_DIR/bin/wallpaper.sh" --restore &

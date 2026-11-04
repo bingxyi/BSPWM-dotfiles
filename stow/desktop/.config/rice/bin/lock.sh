@@ -1,124 +1,48 @@
 #!/usr/bin/env bash
-# rice :: lock the session using the active theme
-#
-# Turn off secondary monitors through xrandr while locked.
-# The greeter draws only on the primary output; the portrait monitor stays
-# black instead of displaying a stretched lock screen.
-#
-# Restore monitors through EXIT/INT/TERM/HUP traps if the locker exits,
-# is killed, or the session ends. Always restore disabled outputs.
+# rice :: lock immediately using the prepared theme image, without RandR changes.
+# wallpaper.sh prepares dimblur asynchronously when the wallpaper changes.
+# Never re-render images, disable outputs or expose an intermediate desktop here.
 
-SCRIPT_NAME=${0##*/}
-
-# shellcheck source=/dev/null
 . "$HOME/.config/rice/bin/lib.sh"
 
-MONITORS_SH="$HOME/.config/bspwm/monitors.sh"
-
-function usage() {
-    cat <<EOM
-
-Lock the session with the current theme.
-usage: ${SCRIPT_NAME} [--keep-monitors|--help]
-    --keep-monitors   Keep secondary monitors enabled
-
-EOM
-    exit 1
+usage() {
+    printf '%s\n' 'usage: lock.sh [--keep-monitors|--help]' \
+        'All connected monitors remain active; --keep-monitors is a compatibility alias.'
 }
 
-function primary_monitor() {
-    xrandr --query 2>/dev/null | awk '/ connected primary/ {print $1; exit}'
-}
-
-function secondary_monitors() {
-    local primary
-    primary=$(primary_monitor)
-    # Without a primary output, secondary outputs cannot be identified; leave them alone.
-    [ -z "$primary" ] && return 0
-    xrandr --query 2>/dev/null | awk '/ connected/ {print $1}' | grep -vxF "$primary"
-}
-
-function monitors_off() {
-    local m count=0
-    while read -r m; do
-        [ -z "$m" ] && continue
-        xrandr --output "$m" --off 2>/dev/null && count=$((count + 1))
-    done < <(secondary_monitors)
-    [ "$count" -gt 0 ] && state_set lock_monitors_off 1
-    return 0
-}
-
-# monitors.sh owns the geometry, as in bspwmrc.
-# Restore it by rerunning that script rather than duplicating positions here.
-function monitors_restore() {
-    [ "$(state_get lock_monitors_off 0)" = "1" ] || return 0
-    if [ -x "$MONITORS_SH" ]; then
-        "$MONITORS_SH" >/dev/null 2>&1
-    elif [ -r "$MONITORS_SH" ]; then
-        bash "$MONITORS_SH" >/dev/null 2>&1
-    else
-        local m
-        while read -r m; do
-            [ -n "$m" ] && xrandr --output "$m" --auto 2>/dev/null
-        done < <(xrandr --query | awk '/ connected/ {print $1}')
+main() {
+    while (($#)); do
+        case "$1" in
+        -k|--keep-monitors) ;; # compatibility with existing bindings/callers
+        -h|--help) usage; return 0;;
+        *) usage >&2; return 2;;
+        esac
+        shift
+    done
+    # Repeated clicks must not start competing lockers. Keep fd open until unlock.
+    exec 9>"${XDG_RUNTIME_DIR:-$STATE_DIR}/rice-screen-lock.lock"
+    flock -n 9 || return 0
+    # Remove any in-flight visual snapshot before the secure locker maps.
+    if [ -S "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/rice-motion.sock" ]; then
+        "$RICE_DIR/bin/motion.py" --cancel || true
     fi
-    # RandR restores pixels; bspwm also needs its retained padding and order reset.
-    if command -v bspc >/dev/null 2>&1; then
-        "$RICE_DIR/bin/monitor-sync.py" || return 1
-    fi
-    state_clear lock_monitors_off
-    return 0
+    do_lock
 }
 
-function do_lock() {
+do_lock() {
     if command -v betterlockscreen >/dev/null 2>&1; then
-        local wallpaper
-        wallpaper=$(state_get wallpaper '')
-        # Render after monitors_off, using the current wallpaper and lock geometry.
-        # A cache built on the desktop has a different size with the portrait screen.
-        if [ -r "$wallpaper" ]; then
-            betterlockscreen --update "$wallpaper" --fx dimblur >/dev/null 2>&1
-        fi
-        betterlockscreen --lock dimblur --off 300
-        return $?
+        if betterlockscreen --lock dimblur --off 300; then return 0; fi
+        printf '%s\n' 'betterlockscreen failed; trying the solid-color locker' >&2
     fi
-
     if command -v i3lock >/dev/null 2>&1; then
         local color
         color=$(theme_get bg '#1e1e2e')
         i3lock -c "${color#\#}" --nofork
         return $?
     fi
-
-    echo "Error: no screen locker found (betterlockscreen or i3lock)" >&2
-    notify "lock" "betterlockscreen not installed" dialog-error critical
+    printf '%s\n' 'Error: no working screen locker (betterlockscreen or i3lock)' >&2
+    notify 'Lock failed' 'No working screen locker is available' dialog-error critical
     return 1
 }
 
-function main() {
-    local keep=0
-
-    while (($#)); do
-        case $1 in
-        -k | --keep-monitors) keep=1 ;;
-        -h | --help) usage ;;
-        *)
-            echo "Error: unknown option '$1'" >&2
-            usage
-            ;;
-        esac
-        shift
-    done
-
-    if [ "$keep" -eq 0 ]; then
-        trap monitors_restore EXIT INT TERM HUP
-        monitors_off
-    fi
-
-    do_lock
-}
-
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main "$@"
-    exit $?
-fi
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then main "$@"; exit $?; fi

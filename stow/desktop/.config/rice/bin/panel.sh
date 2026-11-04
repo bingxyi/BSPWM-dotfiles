@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Shared popup lifetime: serialized switching, outside click, temporary Escape.
 set -u
+. "$HOME/.config/rice/env"
 CONFIG="${RICE_EWW_CONFIG:-$HOME/.config/eww}"
 RUNTIME="${XDG_RUNTIME_DIR:-$HOME/.cache/rice}"
 mkdir -p "$RUNTIME"
@@ -10,7 +11,7 @@ ew() { eww -c "$CONFIG" "$@"; }
 active() { ew active-windows 2>/dev/null; }
 stop_keys() {
     local pid cmd
-    if [[ -r "$KEY_PID" ]] && read -r pid < "$KEY_PID" && [[ "$pid" =~ ^[0-9]+$ ]]; then
+    if [[ -r "$KEY_PID" ]] && read -r pid < "$KEY_PID" && [[ "$pid" =~ ^[0-9]+$ ]] && [[ -r "/proc/$pid/cmdline" ]]; then
         cmd=$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null) || cmd=''
         [[ "$cmd" == *"sxhkd -c $KEY_CONFIG"* ]] && kill "$pid" 2>/dev/null || true
     fi
@@ -21,7 +22,7 @@ close_panels() {
     if (($#)); then windows="$1"; else windows=$(active); fi
     ew update cc_reveal=false media_reveal=false cc_visible=false >/dev/null 2>&1 || true
     if [[ "$windows" == *'control:'* || "$windows" == *'media:'* ]]; then
-        sleep 0.24
+        sleep 0.20
     fi
     while IFS=: read -r id _; do
         case "$id" in control|media|cc_backdrop_*) ids+=("$id");; esac

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # rice :: volume with OSD (wpctl/PipeWire)
 
+. "$HOME/.config/rice/env"
+
 DEPENDENCIES=(wpctl)
 SCRIPT_NAME=${0##*/}
 SINK="@DEFAULT_AUDIO_SINK@"
@@ -36,6 +38,8 @@ function main() {
             ;;
         -g | --get) action="get" ;;
         --icon) action="icon" ;;
+        --mic-status) action="mic-status" ;;
+        --muted) action="muted" ;;
         -h | --help) usage ;;
         *)
             echo "Error: unknown option '$1'" >&2
@@ -49,20 +53,21 @@ function main() {
 
     case "$action" in
     up)
-        wpctl set-mute "$SINK" 0
-        wpctl set-volume -l 1.5 "$SINK" "${STEP}+"
+        wpctl set-mute "$SINK" 0 || return 1
+        wpctl set-volume -l 1.5 "$SINK" "${STEP}+" || return 1
         osd
         ;;
     down)
-        wpctl set-volume "$SINK" "${STEP}-"
+        wpctl set-volume "$SINK" "${STEP}-" || return 1
         osd
         ;;
     toggle)
-        wpctl set-mute "$SINK" toggle
+        wpctl set-mute "$SINK" toggle || return 1
         osd
         ;;
     mic)
-        wpctl set-mute "$SOURCE" toggle
+        wpctl set-mute "$SOURCE" toggle || return 1
+        refresh_bar
         if is_muted "$SOURCE"; then
             notify_osd "microphone" "muted" microphone-sensitivity-muted
         else
@@ -72,18 +77,20 @@ function main() {
     set) set_volume "$value" ;;
     get) get_volume ;;
     icon) volume_icon ;;
+    mic-status) is_muted "$SOURCE" && printf on || printf off ;;
+    muted) is_muted "$SINK" && printf on || printf off ;;
     esac
 }
 
 function set_volume() {
     local value="$1"
-    if ! [[ "$value" =~ ^[0-9]+$ ]]; then
+    if ! [[ "$value" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
         echo "Error: --set expects a number between 0 and 100" >&2
         exit 1
     fi
-    [ "$value" -gt 100 ] && value=100
-    wpctl set-mute "$SINK" 0
-    wpctl set-volume "$SINK" "${value}%"
+    value=$(awk -v v="$value" 'BEGIN {if(v>100)v=100; printf "%.0f",v}')
+    wpctl set-mute "$SINK" 0 || return 1
+    wpctl set-volume "$SINK" "${value}%" || return 1
     refresh_bar
 }
 
@@ -120,6 +127,7 @@ function volume_icon() {
 function osd() {
     local vol
     vol=$(get_volume)
+    refresh_bar
     if is_muted; then
         notify_osd "volume" "muted" audio-volume-muted 0
         return 0
@@ -141,7 +149,7 @@ function notify_osd() {
 
 function refresh_bar() {
     if command -v eww &>/dev/null; then
-        eww -c "$HOME/.config/eww" update volume="$(get_volume)" 2>/dev/null
+        eww -c "$HOME/.config/eww" update volume="$(get_volume)" speaker_muted="$(is_muted && printf on || printf off)" mic_muted="$(is_muted "$SOURCE" && printf on || printf off)" 2>/dev/null
     fi
     return 0
 }

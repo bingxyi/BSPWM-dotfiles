@@ -62,3 +62,9 @@ stow/editor/.config/nvim/lua/rice-theme.lua
 
 # GTK bookmarks are personal and remain outside the repository
 stow/**/bookmarks
+
+# Private user shortcuts and events
+stow/**/custom.sxhkdrc
+stow/**/custom-binds.json
+stow/**/bind-history/
+stow/**/calendar/events.json

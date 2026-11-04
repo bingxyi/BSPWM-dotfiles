@@ -127,15 +127,14 @@ function wifi_name() {
 }
 
 function wifi_toggle() {
-    if [ "$(wifi_state)" = "on" ]; then
-        nmcli radio wifi off 2>/dev/null
-        notify "Wi-Fi" "Radio disabled" network-wireless-offline low
-    else
-        nmcli radio wifi on 2>/dev/null
-        notify "Wi-Fi" "Radio enabled" network-wireless low
-    fi
+    exec 8>"$STATE_DIR/wifi.lock"
+    flock -w 4 8 || return 1
+    local target=on
+    [ "$(wifi_state)" = on ] && target=off
+    LC_ALL=C nmcli radio wifi "$target" 2>/dev/null || { echo 'Wi-Fi radio change was refused' >&2; return 1; }
     command -v eww >/dev/null 2>&1 && eww -c "$HOME/.config/eww" update \
-        wifi_state="$(wifi_state)" wifi_name="$(wifi_name)" 2>/dev/null
+        wifi_state="$(wifi_state)" wifi_name="$(wifi_name)" \
+        net_label="$(print_status)" net_icon="$(print_icon)" 2>/dev/null
     return 0
 }
 

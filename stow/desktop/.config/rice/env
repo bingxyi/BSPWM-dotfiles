@@ -1,3 +1,12 @@
+# Recover the existing per-user runtime on minimal X11 launch environments.
+if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+    rice_runtime="/run/user/$(id -u)"
+    if [ -d "$rice_runtime" ] && [ -O "$rice_runtime" ]; then
+        export XDG_RUNTIME_DIR="$rice_runtime"
+    fi
+    unset rice_runtime
+fi
+
 # rice :: shared session environment
 # Read by ~/.xprofile (SDDM and startx), bspwmrc, and ~/.zshrc.
 # Define variables here when all three entry points need them.
@@ -46,8 +55,19 @@ done
 export PATH
 unset rice_bin
 
-# US English for the desktop, shells and programs launched from this session.
-export LANG=en_US.UTF-8
+# English UI with a UTF-8 locale built into glibc, even without locale-gen.
+export LANG="${RICE_LANG:-C.UTF-8}"
 export LANGUAGE=en_US:en
 unset LC_ALL LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
 unset LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT LC_IDENTIFICATION
+
+
+# libdbus clients such as dunstctl need an explicit user bus on minimal X11 sessions.
+# Reuse the existing systemd user bus; never create a second isolated session bus.
+if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+    rice_user_bus="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/bus"
+    if [ -S "$rice_user_bus" ]; then
+        export DBUS_SESSION_BUS_ADDRESS="unix:path=$rice_user_bus"
+    fi
+    unset rice_user_bus
+fi

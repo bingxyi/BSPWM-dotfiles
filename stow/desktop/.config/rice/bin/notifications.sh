@@ -112,7 +112,9 @@ function clear_all() {
 }
 
 function toggle_dnd() {
-    if [ "$(dunstctl is-paused)" = "true" ]; then
+    local paused
+    paused=$(dunstctl is-paused 2>/dev/null) || { echo "Notification service unavailable" >&2; return 1; }
+    if [ "$paused" = "true" ]; then
         dunstctl set-paused false || return 1
         state_set dnd_enabled false
         notify "notifications" "Normal mode" notification low
@@ -132,7 +134,9 @@ function count_notifications() {
 }
 
 function print_status() {
-    if [ "$(dunstctl is-paused 2>/dev/null)" = "true" ]; then
+    local paused
+    paused=$(dunstctl is-paused 2>/dev/null) || { printf unavailable; return 0; }
+    if [ "$paused" = "true" ]; then
         echo "dnd"
         return 0
     fi
@@ -141,7 +145,7 @@ function print_status() {
 
 function refresh_bar() {
     command -v eww &>/dev/null && eww -c "$HOME/.config/eww" update \
-        notif_count="$(count_notifications)" 2>/dev/null
+        notif_count="$(count_notifications)" dnd="$(print_status)" 2>/dev/null
     return 0
 }
 

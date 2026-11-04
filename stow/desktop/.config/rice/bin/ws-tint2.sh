@@ -43,71 +43,11 @@ function main() {
         ;;
     esac
 
-    render
-    bspc subscribe desktop node_add node_remove node_transfer desktop_focus monitor_focus |
-        while read -r _; do
-            render
-        done
+    exec "$RICE_DIR/bin/workspace_state.py" --tint2 --watch
 }
 
 function render() {
-    local focused_col occupied_col free_col urgent_col
-    focused_col=$(theme_get accent "#cba6f7")
-    occupied_col=$(theme_get fg "#cdd6f4")
-    free_col=$(theme_get muted "#6c7086")
-    urgent_col=$(theme_get urgent "#f38ba8")
-
-    local -a names
-    mapfile -t names < <(bspc query -D --names 2>/dev/null)
-
-    local focused
-    focused=$(bspc query -D -d focused --names 2>/dev/null)
-
-    local i name color icon
-    for i in $(seq 0 9); do
-        name="${names[$i]:-}"
-        icon="${ICONS[$i]}"
-
-        if [ -z "$name" ]; then
-            printf '\n'
-            continue
-        fi
-
-        if [ "$name" = "$focused" ]; then
-            color="$focused_col"
-        elif is_urgent "$name"; then
-            color="$urgent_col"
-        elif is_occupied "$name"; then
-            color="$occupied_col"
-        else
-            color="$free_col"
-        fi
-
-        # Color alone is insufficient on a narrow panel: make the focused workspace
-        # larger and bolder, and shrink empty workspaces.
-        local size weight
-        if [ "$name" = "$focused" ]; then
-            size="x-large"
-            weight="bold"
-        elif is_occupied "$name"; then
-            size="medium"
-            weight="normal"
-        else
-            size="small"
-            weight="normal"
-        fi
-
-        printf '<span foreground="%s" size="%s" weight="%s">%s</span>\n' \
-            "$color" "$size" "$weight" "$icon"
-    done
-}
-
-function is_occupied() {
-    [ -n "$(bspc query -N -d "$1" -n .window 2>/dev/null | head -n1)" ]
-}
-
-function is_urgent() {
-    [ -n "$(bspc query -N -d "$1" -n .urgent 2>/dev/null | head -n1)" ]
+    "$RICE_DIR/bin/workspace_state.py" --tint2
 }
 
 function menu_workspaces() {
@@ -123,7 +63,7 @@ function menu_workspaces() {
     [ -z "$chosen" ] && exit 0
 
     index=$(printf '%s' "$chosen" | awk '{print $2}')
-    bspc desktop -f "$index"
+    "$RICE_DIR/bin/workspace.sh" --focus "$index"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

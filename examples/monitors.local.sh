@@ -1,9 +1,12 @@
-# Example for the original dual-monitor machine. Adjust after `xrandr --query`.
-MON_H=HDMI-0
-MON_V=DVI-D-0
-MODE_H=1920x1080
-MODE_V=1920x1080
-RATE_H=75
-RATE_V=60
-ROTATE_V=right
-VERTICAL_SIDE=left
+# Optional preferences, not hardware requirements. Inspect `xrandr --query`.
+# An unplugged preferred monitor is automatically replaced by an available one.
+# RICE_MONITOR_PRIMARY=HDMI-1
+# RICE_MONITOR_ORDER="HDMI-1 eDP-1 DP-1"
+# Complete active layouts retain positions and rotations; newly connected
+# screens are arranged side by side at their native resolutions.
+# For a portrait/stacked/mirrored setup, save an autorandr profile:
+#   autorandr --save work
+
+# Optional explicit left-to-right geometry; default is preserve.
+# RICE_MONITOR_LAYOUT=ordered
+# RICE_MONITOR_ORDER="HDMI-1 eDP-1"

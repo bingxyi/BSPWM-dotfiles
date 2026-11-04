@@ -53,9 +53,9 @@ function block_engagement() {
     fi
 
     if [ -n "$target" ]; then
-        span "$red" ""
+        span "$red" "󰓾"
     else
-        span "$muted" ""
+        span "$muted" "󰓾"
     fi
 }
 
@@ -98,7 +98,7 @@ function block_system() {
     mem=$(free -m | awk '/^Mem:/ {printf "%d", $3 * 100 / $2}')
     temp=$(temperature)
 
-    span "$fg" ""
+    span "$fg" "󰻠"
     span "$fg" "${cpu}"
     span "$fg" "󰍛"
     span "$fg" "${mem}"

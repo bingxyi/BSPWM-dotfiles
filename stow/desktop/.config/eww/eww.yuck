@@ -35,7 +35,11 @@
 (defvar cc_reveal false)
 (defvar cc_visible false)
 (defvar media_reveal false)
-(defvar mic_muted "off")
+(defvar cc_busy false)
+(defvar cc_active_action "")
+(defvar cc_error "")
+(defpoll mic_muted :interval "2s" :initial "off" :run-while cc_visible "$HOME/.config/rice/bin/volume.sh --mic-status")
+(defpoll speaker_muted :interval "2s" :initial "off" :run-while cc_visible "$HOME/.config/rice/bin/volume.sh --muted")
 
 (defpoll clock_time  :interval "5s" :run-while cc_visible  :initial "--:--" "date '+%H:%M'")
 (defpoll clock_date  :interval "60s" :run-while cc_visible :initial "" "date '+%A, %B %d'")
@@ -51,18 +55,18 @@
 (defwidget launcher []
   (box :class "block" :orientation "v" :space-evenly false :spacing 4
     (button :class "icon-btn accent" :tooltip "Application menu (Super+D)"
-            :onclick "$HOME/.config/rice/bin/launcher.sh &" "")
+            :onclick "$HOME/.config/rice/bin/launcher.sh &" "󰀻")
     (button :class "icon-btn" :tooltip "Security panel (Super+O)"
-            :onclick "$HOME/.config/rice/bin/rice-menu.sh &" "")
+            :onclick "$HOME/.config/rice/bin/rice-menu.sh &" "󰒓")
     (button :class "icon-btn" :tooltip "terminal (Super+Return)"
-            :onclick "kitty &" "")))
+            :onclick "kitty &" "󰞷")))
 
 (defwidget ws []
   (box :class "block ws-box" :orientation "v" :space-evenly false :spacing 2
     (for w in workspaces
       (button :class "ws ${w.state}"
               :tooltip "${w.name} — ${w.role}"
-              :onclick "bspc desktop -f ${w.name}"
+              :timeout "2s" :onclick "$HOME/.config/rice/bin/workspace.sh --focus ${w.name}"
         "${w.icon}"))))
 
 (defwidget engagement_block []
@@ -73,23 +77,23 @@
       {engagement != "" ? "󰯄" : "󰋣"})
     (button :class {target != "No target" ? "icon-btn red" : "icon-btn dim"}
             :tooltip "target: ${target}"
-            :onclick "$HOME/.config/rice/bin/target.sh --menu &" "")
+            :onclick "$HOME/.config/rice/bin/target.sh --menu &" "󰓾")
     (button :class {vpn != "off" ? "icon-btn yellow" : "icon-btn dim"}
             :tooltip "vpn: ${vpn}"
-            :onclick "$HOME/.config/rice/bin/vpn.sh --menu &" "󰖂")
+            :onclick "$HOME/.config/rice/bin/control_action.py vpn" "󰖂")
     (button :class "icon-btn" :tooltip "proxy (Burp/ZAP/mitmproxy)"
-            :onclick "$HOME/.config/rice/bin/proxy.sh --menu &" "󰯃")))
+            :onclick "$HOME/.config/rice/bin/control_action.py proxy" "󰯃")))
 
 (defwidget sysinfo []
   (box :class "block" :orientation "v" :space-evenly false :spacing 6
     (box :class "metric" :orientation "v" :space-evenly false
-      (label :class "metric-icon" :text "")
+      (label :class "metric-icon" :text "󰻠")
       (label :class "metric-value" :text cpu))
     (box :class "metric" :orientation "v" :space-evenly false
       (label :class "metric-icon" :text "󰍛")
       (label :class "metric-value" :text mem))
     (box :class "metric" :orientation "v" :space-evenly false :visible {temp != ""}
-      (label :class "metric-icon" :text "")
+      (label :class "metric-icon" :text "󰔏")
       (label :class "metric-value" :text temp))))
 
 (defwidget tray_block []
@@ -144,8 +148,10 @@
 
 ;; Toggle tile: the active class fills the tile with the accent color.
 ;; This is the only state indicator, so it must be unambiguous.
-(defwidget qs_tile [icon title subtitle active onclick]
-  (button :class "qs-tile ${active ? "on" : "off"}"
+(defwidget qs_tile [icon title subtitle selected onclick]
+  (button :class "qs-tile ${selected ? "on" : "off"}"
+          :timeout "15s"
+          :active {!cc_busy && (title != "Power" || power_writable == "1") && (title != "Do not disturb" || dnd != "unavailable")}
           :onclick onclick
     (box :orientation "h" :space-evenly false :spacing 12
       (label :class "qs-icon" :text icon)
@@ -167,58 +173,65 @@
         (button :class "cc-mini" :tooltip "Security panel"
                 :onclick "$HOME/.config/rice/bin/rice-menu.sh &" "󰒓")
         (button :class "cc-mini" :tooltip "Lock (Super+Shift+X)"
-                :onclick "$HOME/.config/rice/bin/control.sh --close; $HOME/.config/rice/bin/lock.sh &" "󰌾")
+                :timeout "8s" :onclick "$HOME/.config/rice/bin/control_action.py lock" "󰌾")
         (button :class "cc-mini danger" :tooltip "session"
-                :onclick "$HOME/.config/rice/bin/control.sh --close; $HOME/.config/rice/bin/powermenu.sh &" "⏻")))))
+                :timeout "8s" :onclick "$HOME/.config/rice/bin/control_action.py session" "⏻")))))
 
 (defwidget cc_tiles []
   (box :class "qs-grid" :orientation "v" :space-evenly false :spacing 8
     (box :orientation "h" :space-evenly true :spacing 8
       (qs_tile :icon {wifi_state == "on" ? "󰖩" : "󰖪"}
                :title "Wi-Fi" :subtitle "${wifi_name}"
-               :active {wifi_state == "on"}
-               :onclick "$HOME/.config/rice/bin/network.sh --wifi-toggle")
+               :selected {wifi_state == "on"}
+               :onclick "$HOME/.config/rice/bin/control_action.py wifi")
       (qs_tile :icon {dnd == "dnd" ? "󰂛" : "󰂚"}
-               :title "Do not disturb" :subtitle {dnd == "dnd" ? "muted" : "enabled"}
-               :active {dnd == "dnd"}
-               :onclick "$HOME/.config/rice/bin/notifications.sh --dnd"))
+               :title "Do not disturb" :subtitle {dnd == "unavailable" ? "Service unavailable" : (dnd == "dnd" ? "muted" : "enabled")}
+               :selected {dnd == "dnd"}
+               :onclick "$HOME/.config/rice/bin/control_action.py dnd"))
     (box :orientation "h" :space-evenly true :spacing 8
       (qs_tile :icon {power_profile == "performance" ? "󰓅" : (power_profile == "power" ? "󰌪" : "󰾅")}
                :title "Power"
-               :subtitle {power_writable == "1" ? power_label : "${power_label} (read only)"}
-               :active {power_profile == "performance"}
-               :onclick "$HOME/.config/rice/bin/powerprofile.sh --cycle")
+               :subtitle {cc_active_action == "power" ? "Switching…" : (power_writable == "1" ? power_label : "${power_label} (read only)")}
+               :selected {power_profile == "performance"}
+               :onclick "$HOME/.config/rice/bin/control_action.py power")
       (qs_tile :icon {caffeine == "on" ? "󰅶" : "󰛊"}
                :title "Keep awake" :subtitle {caffeine == "on" ? "Screen stays on" : "Normal locking"}
-               :active {caffeine == "on"}
-               :onclick "$HOME/.config/rice/bin/caffeine.sh --toggle"))
+               :selected {caffeine == "on"}
+               :onclick "$HOME/.config/rice/bin/control_action.py caffeine"))
     (box :orientation "h" :space-evenly true :spacing 8
       (qs_tile :icon "󰖂" :title "VPN" :subtitle "${vpn}"
-               :active {vpn != "off"}
-               :onclick "$HOME/.config/rice/bin/vpn.sh --menu &")
+               :selected {vpn != "off"}
+               :onclick "$HOME/.config/rice/bin/control_action.py vpn")
       (qs_tile :icon "󰯃" :title "Proxy" :subtitle "Burp · ZAP"
-               :active false
-               :onclick "$HOME/.config/rice/bin/proxy.sh --menu &"))
+               :selected false
+               :onclick "$HOME/.config/rice/bin/control_action.py proxy"))
     (box :orientation "h" :space-evenly true :spacing 8
       (qs_tile :icon "󰄄" :title "Screenshot" :subtitle "Area / screen"
-               :active false
-               :onclick "$HOME/.config/rice/bin/control.sh --close; $HOME/.config/rice/bin/screenshot.sh --area &")
+               :selected false
+               :onclick "$HOME/.config/rice/bin/control_action.py screenshot")
       (qs_tile :icon "󰏘" :title "Theme" :subtitle "appearance"
-               :active false
-               :onclick "$HOME/.config/rice/bin/theme.sh --menu &"))))
+               :selected false
+                :onclick "$HOME/.config/rice/bin/control_action.py theme"))
+    (box :orientation "h" :space-evenly true :spacing 8
+      (qs_tile :icon "󰂯" :title "Bluetooth" :subtitle "Devices & pairing"
+               :selected false
+               :onclick "$HOME/.config/rice/bin/control_action.py bluetooth")
+      (qs_tile :icon "󰌌" :title "Bind saver" :subtitle "SUPER shortcuts"
+               :selected false
+               :onclick "$HOME/.config/rice/bin/control_action.py binds"))))
 
 (defwidget cc_sliders []
   (box :class "cc-section" :orientation "v" :space-evenly false :spacing 10
     (label :class "cc-section-title" :text "SOUND" :halign "start")
     (box :orientation "h" :space-evenly false :spacing 12
       (button :class "cc-slider-icon" :tooltip "muted"
-              :onclick "$HOME/.config/rice/bin/volume.sh --toggle" "󰕾")
-      (scale :class "cc-scale" :hexpand true :value volume :min 0 :max 101
-             :onchange "$HOME/.config/rice/bin/volume.sh --set {}")
+              :active {!cc_busy} :timeout "15s" :onclick "$HOME/.config/rice/bin/control_action.py mute" {speaker_muted == "on" ? "󰝟" : "󰕾"})
+      (scale :class "cc-scale" :hexpand true :value volume :min 0 :max 100 :round-digits 0
+             :timeout "3s" :onchange "$HOME/.config/rice/bin/volume.sh --set {}")
       (label :class "cc-slider-value" :text "${volume}%"))
     (box :orientation "h" :space-evenly true :spacing 8
-      (button :class "cc-chip" :onclick "$HOME/.config/rice/bin/volume.sh --mic-toggle" "󰍬  microphone")
-      (button :class "cc-chip" :onclick "pavucontrol &" "󰙪  mixer"))))
+      (button :class "cc-chip ${mic_muted == 'on' ? 'on' : ''}" :active {!cc_busy} :timeout "15s" :onclick "$HOME/.config/rice/bin/control_action.py microphone" {mic_muted == "on" ? "󰍬  Muted" : "󰍭  Microphone"})
+      (button :class "cc-chip" :timeout "8s" :onclick "$HOME/.config/rice/bin/control_action.py mixer" "󰙪  mixer"))))
 
 (defwidget cc_engagement []
   (box :class "cc-section" :orientation "v" :space-evenly false :spacing 8
@@ -237,10 +250,40 @@
       (button :class "cc-chip" :onclick "$HOME/.config/rice/bin/engagement.sh --menu &" "󰸄  open")
       (button :class "cc-chip" :onclick "$HOME/.config/rice/bin/target.sh --menu &" "󰓾  target"))))
 
+(deflisten calendar_data :initial '{"title":"Calendar","today_label":"Today","weeks":[],"weekdays":["M","T","W","T","F","S","S"],"agenda":[]}'
+  "$HOME/.config/rice/bin/calendar_state.py --watch")
+
 (defwidget cc_calendar []
-  (box :class "cc-section" :orientation "v" :space-evenly false :spacing 6
-    (label :class "cc-section-title" :text "CALENDAR" :halign "start")
-    (calendar :class "cc-calendar")))
+  (box :class "cc-section" :orientation "v" :space-evenly false :spacing 8
+    (box :orientation "h" :space-evenly false :spacing 6
+      (label :class "cc-section-title" :text "CALENDAR" :halign "start" :hexpand true)
+      (button :class "cc-chip today-chip" :tooltip "Return to this month"
+        :timeout "2s" :onclick "$HOME/.config/rice/bin/calendar_state.py --today" "Today"))
+    (label :class "calendar-today-label" :text "Today · ${calendar_data.today_label}" :halign "start")
+    (box :orientation "h" :space-evenly false :spacing 8
+      (button :class "cc-mini" :timeout "2s" :onclick "$HOME/.config/rice/bin/calendar_state.py --month -1" "‹")
+      (label :class "calendar-month" :text {calendar_data.title} :hexpand true)
+      (button :class "cc-mini" :timeout "2s" :onclick "$HOME/.config/rice/bin/calendar_state.py --month 1" "›"))
+    (box :orientation "h" :space-evenly true
+      (for weekday in {calendar_data.weekdays}
+        (label :class "calendar-weekday" :text weekday)))
+    (box :orientation "v" :space-evenly false :spacing 3
+      (for week in {calendar_data.weeks}
+        (box :orientation "h" :space-evenly true :spacing 3
+          (for day in {week.days}
+            (button :class "calendar-day ${day.today ? 'today' : ''} ${day.marked ? 'has-event' : ''}"
+              :active {day.date != ""}
+              :tooltip {day.marked ? "${day.count} event(s) — click to edit" : "Add an event"}
+              :timeout "8s" :onclick "$HOME/.config/rice/bin/control_action.py events --date ${day.date}"
+              (box :orientation "v" :space-evenly false :spacing 0
+                (label :text {day.label})
+                (label :class "calendar-dot" :text {day.marked ? "●" : " "})))))))
+    (for event in {calendar_data.agenda}
+      (label :class "calendar-agenda" :halign "start" :limit-width 36
+        :text "● ${event.time} ${event.title}"))
+    (button :class "cc-chip calendar-add"
+      :timeout "8s" :onclick "$HOME/.config/rice/bin/control_action.py events"
+      "＋  Add / manage events")))
 
 (defwidget cc_notifications []
   (box :class "cc-section notif-section" :orientation "v" :space-evenly false :spacing 8
@@ -248,7 +291,7 @@
       (label :class "cc-section-title" :text "NOTIFICATIONS" :halign "start" :hexpand true)
       (label :class "cc-badge" :text notif_count :visible {notif_count != "0"})
       (button :class "cc-mini" :tooltip "Clear all"
-              :onclick "$HOME/.config/rice/bin/notifications.sh --clear" "󰆴"))
+              :timeout "3s" :onclick "$HOME/.config/rice/bin/notifications.sh --clear" "󰆴"))
     (box :class "notif-list" :orientation "v" :space-evenly false :spacing 6
         (for n in notifications
           (box :class "notif ${n.urgency}" :orientation "v" :space-evenly false :spacing 2
@@ -273,6 +316,7 @@
     (box :class "cc-panel ${cc_reveal ? "is-open" : "is-closed"}"
          :orientation "v" :space-evenly false :spacing 12 :vexpand true
         (cc_header)
+        (label :class "cc-error" :text cc_error :visible {cc_error != ""} :wrap true)
         ;; Use one scroll container for the entire body. Separate sections
         ;; raised the natural minimum height above 1200px on 1080px monitors,
         ;; causing the window to ignore the requested height and overflow.
@@ -361,7 +405,7 @@
                 :onclick "$HOME/.config/rice/bin/volume.sh --toggle"
                 {media_state.muted ? "󰝟" : "󰕾"})
         (scale :class "cc-scale" :hexpand true :min 0 :max 100 :value {media_state.volume}
-               :onchange "$HOME/.config/rice/bin/volume.sh --set {}")
+               :timeout "3s" :onchange "$HOME/.config/rice/bin/volume.sh --set {}")
         (label :class "cc-slider-value" :text "${media_state.volume}%")))))
 
 (defwindow media

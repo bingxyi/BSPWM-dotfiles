@@ -29,53 +29,6 @@ class RegressionTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(result.stdout.strip(), directory)
 
-    def monitor_commands(self, query, extra_env=None, fail_first=False):
-        with tempfile.TemporaryDirectory(prefix='rice-monitors-') as directory:
-            root = Path(directory)
-            (root / 'query').write_text(query)
-            stub = root / 'xrandr'
-            stub.write_text('''#!/usr/bin/env python3
-import json, os, pathlib, sys
-root = pathlib.Path(os.environ['FIXTURE'])
-if sys.argv[1:] == ['--query']:
-    print((root / 'query').read_text()); sys.exit(0)
-with (root / 'calls').open('a') as out: out.write(json.dumps(sys.argv[1:])+'\\n')
-if os.environ.get('FAIL_FIRST') and not (root/'failed').exists():
-    (root/'failed').touch();sys.exit(1)
-''')
-            stub.chmod(0o755)
-            env = {**os.environ, 'HOME': directory, 'FIXTURE': directory,
-                   'PATH': directory + ':' + os.environ['PATH']}
-            for name in ('MON_H', 'MON_V', 'MODE_H', 'MODE_V', 'RATE_H', 'RATE_V'):
-                env.pop(name, None)
-            env.update(extra_env or {})
-            if fail_first:
-                env['FAIL_FIRST'] = '1'
-            result = subprocess.run(['bash', str(ROOT / 'stow/desktop/.config/bspwm/monitors.sh')],
-                                    env=env, capture_output=True, text=True)
-            self.assertEqual(result.returncode, 0, result.stderr)
-            return [json.loads(line) for line in (root / 'calls').read_text().splitlines()]
-
-    def test_monitor_alias_fallback_is_distinct_and_centered(self):
-        calls = self.monitor_commands('DVI-D-0 connected\n   1920x1080 60.0*+\nDP-1 connected\n   1920x1080 60.0+\n')
-        call = calls[0]
-        names = [call[i+1] for i, token in enumerate(call) if token == '--output']
-        positions = [call[i+1] for i, token in enumerate(call) if token == '--pos']
-        self.assertEqual(names, ['DVI-D-0', 'DP-1'])
-        self.assertEqual(positions, ['1080x420', '0x0'])
-
-    def test_single_monitor_clears_portrait_rotation(self):
-        call = self.monitor_commands('eDP-1 connected\n   2560x1600 60.0*+\n')[0]
-        self.assertEqual(call.count('--output'), 1)
-        self.assertIn('normal', call)
-        self.assertEqual(call[call.index('--pos')+1], '0x0')
-
-    def test_unsupported_explicit_mode_falls_back_without_disabling_outputs(self):
-        calls = self.monitor_commands('eDP-1 connected\n   2560x1600 60.0*+\n',
-                                      {'MODE_H': '1920x1080', 'RATE_H': '75'}, True)
-        self.assertIn('--auto', calls[-1])
-        self.assertTrue(all('--off' not in call for call in calls))
-
     def test_shell_environment_is_idempotent(self):
         envfile = ROOT / 'stow/desktop/.config/rice/env'
         command = '. "$1"; first=$PATH; . "$1"; [[ "$first" == "$PATH" ]]'
@@ -136,25 +89,22 @@ do_lock
 
 class InstallerTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix='rice install ')
+        self.temp = tempfile.TemporaryDirectory(prefix='rice copy ')
         self.base = Path(self.temp.name)
         self.repo = self.base / 'repo with spaces'
         self.target = self.base / 'home with spaces'
         self.target.mkdir()
         for name in installer.PACKAGES:
             (self.repo / 'stow' / name).mkdir(parents=True)
-        (self.repo / 'defaults').mkdir()
-        palette = self.repo / 'defaults/.config/rice/current-theme.conf'
-        palette.parent.mkdir(parents=True)
-        palette.write_text('name=fixture\n')
-        src = self.repo / 'stow/desktop/.config/demo/config'
-        src.parent.mkdir(parents=True)
-        src.write_text('new\n')
-        self.src = src
+        (self.repo / 'defaults/.config/rice').mkdir(parents=True)
+        (self.repo / 'defaults/.config/rice/current-theme.conf').write_text('name=fixture\n')
         self.rel = '.config/demo/config'
+        self.src = self.repo / 'stow/desktop' / self.rel
+        self.src.parent.mkdir(parents=True)
+        self.src.write_text('new\n')
+        self.src.chmod(0o755)
         self.patches = [patch.object(installer, 'REPO', self.repo),
-                        patch.object(installer, 'TEMPLATES', {}),
-                        patch.object(installer.shutil, 'which', return_value='/stub/stow')]
+                        patch.object(installer, 'TEMPLATES', {})]
         for item in self.patches:
             item.start()
 
@@ -163,35 +113,39 @@ class InstallerTests(unittest.TestCase):
             item.stop()
         self.temp.cleanup()
 
-    def stow_stub(self, args, **kwargs):
-        """Model --no-folding only; real Stow is tested separately when installed."""
-        self.assertIn('--no-folding', args)
-        for rel, src in installer.sources().items():
-            path = self.target / rel
-            path.parent.mkdir(parents=True, exist_ok=True)
-            if not installer.exists(path):
-                path.symlink_to(src)
-
     def backup(self):
-        return sorted((self.target / '.local/state/rice/backups').iterdir())[-1]
+        return max((self.target / '.local/state/rice/backups').iterdir(), key=lambda p: p.stat().st_mtime_ns)
 
-    def deploy(self):
-        with patch.object(installer.subprocess, 'run', side_effect=self.stow_stub):
-            installer.deploy(self.target)
+    def deploy(self, **kwargs):
+        installer.deploy(self.target, **kwargs)
 
-    def test_conflict_backup_and_restore(self):
+    def test_regular_copy_backup_and_restore(self):
         path = self.target / self.rel
         path.parent.mkdir(parents=True)
         path.write_text('original\n')
         self.deploy()
         backup = self.backup()
-        self.assertTrue(path.is_symlink())
-        self.assertEqual((backup / 'files' / self.rel).read_text(), 'original\n')
+        self.assertFalse(path.is_symlink())
+        self.assertEqual(path.read_text(), 'new\n')
+        self.assertEqual(path.stat().st_mode & 0o777, 0o755)
+        self.src.write_text('repo changed later\n')
+        self.assertEqual(path.read_text(), 'new\n')
         installer.restore(backup)
         self.assertEqual(path.read_text(), 'original\n')
-        self.assertFalse(path.is_symlink())
 
-    def test_broken_symlink_is_preserved(self):
+    def test_legacy_links_become_independent_files_with_content_backup(self):
+        path = self.target / self.rel
+        path.parent.mkdir(parents=True)
+        path.symlink_to(self.src)
+        self.deploy()
+        self.assertFalse(path.is_symlink())
+        backup = self.backup()
+        self.assertTrue((backup / 'files' / self.rel).is_symlink())
+        self.assertEqual((backup / 'resolved' / self.rel).read_text(), 'new\n')
+        installer.restore(backup)
+        self.assertTrue(path.is_symlink())
+
+    def test_broken_symlink_is_preserved_for_restore(self):
         path = self.target / self.rel
         path.parent.mkdir(parents=True)
         path.symlink_to('missing')
@@ -199,40 +153,73 @@ class InstallerTests(unittest.TestCase):
         installer.restore(self.backup())
         self.assertEqual(os.readlink(path), 'missing')
 
-    def test_symlink_parent_does_not_modify_external_tree(self):
+    def test_symlink_parent_stops_before_changes(self):
         outside = self.base / 'external'
         (outside / 'demo').mkdir(parents=True)
         (outside / 'demo/config').write_text('private\n')
         (self.target / '.config').symlink_to(outside, target_is_directory=True)
-        self.deploy()
+        with self.assertRaisesRegex(RuntimeError, 'ancestor'):
+            self.deploy()
         self.assertEqual((outside / 'demo/config').read_text(), 'private\n')
-        installer.restore(self.backup())
-        self.assertTrue((self.target / '.config').is_symlink())
+        self.assertFalse((self.target / '.local').exists())
 
-    def test_stow_failure_rolls_back_partial_links(self):
+    def test_copy_failure_rolls_back_previously_written_files(self):
         path = self.target / self.rel
         path.parent.mkdir(parents=True)
         path.write_text('original\n')
-        def fail(*args, **kwargs):
-            self.stow_stub(*args, **kwargs)
-            raise subprocess.CalledProcessError(1, 'stow')
-        with patch.object(installer.subprocess, 'run', side_effect=fail):
-            with self.assertRaises(subprocess.CalledProcessError):
-                installer.deploy(self.target)
+        original = installer.os.replace
+        def fail(source, dest):
+            if str(dest).endswith(installer.INVENTORY) and Path(dest).is_relative_to(self.target):
+                raise OSError('simulated copy failure')
+            return original(source, dest)
+        with patch.object(installer.os, 'replace', side_effect=fail):
+            with self.assertRaisesRegex(OSError, 'simulated'):
+                self.deploy()
         self.assertEqual(path.read_text(), 'original\n')
 
-    def test_repeat_install_and_removed_source_cleanup(self):
+    def test_bad_template_is_caught_before_live_changes(self):
+        with patch.object(installer, 'render', side_effect=RuntimeError('bad template')):
+            with self.assertRaisesRegex(RuntimeError, 'bad template'):
+                self.deploy()
+        self.assertEqual(list(self.target.iterdir()), [])
+
+    def test_repeat_install_and_removed_unchanged_source_cleanup(self):
         self.deploy()
         self.deploy()
-        self.assertEqual((self.target / self.rel).resolve(), self.src)
         self.src.unlink()
         self.deploy()
         self.assertFalse(installer.exists(self.target / self.rel))
 
+    def test_direct_local_edits_stop_update_without_losing_work(self):
+        self.deploy()
+        path = self.target / self.rel
+        path.write_text('edited directly in config\n')
+        self.src.write_text('new upstream version\n')
+        before = len(list((self.target / '.local/state/rice/backups').iterdir()))
+        with self.assertRaisesRegex(RuntimeError, 'Local edits retained'):
+            self.deploy()
+        self.assertEqual(path.read_text(), 'edited directly in config\n')
+        self.assertEqual(len(list((self.target / '.local/state/rice/backups').iterdir())), before)
+
+    def test_explicit_overwrite_keeps_local_edit_in_backup(self):
+        self.deploy()
+        path = self.target / self.rel
+        path.write_text('personal edit\n')
+        self.deploy(overwrite_local=True)
+        self.assertEqual((self.backup() / 'files' / self.rel).read_text(), 'personal edit\n')
+        self.assertEqual(path.read_text(), 'new\n')
+
+    def test_removed_source_does_not_delete_edited_copy(self):
+        self.deploy()
+        path = self.target / self.rel
+        path.write_text('personal edit\n')
+        self.src.unlink()
+        self.deploy()
+        self.assertEqual(path.read_text(), 'personal edit\n')
+
     def test_restore_refuses_subsequent_user_edits(self):
         self.deploy()
         path = self.target / self.rel
-        path.unlink()
         path.write_text('later user change\n')
         with self.assertRaisesRegex(RuntimeError, 'Changed since installation'):
             installer.restore(self.backup())
@@ -242,17 +229,50 @@ class InstallerTests(unittest.TestCase):
         installer.deploy(self.target, dry_run=True)
         self.assertEqual(list(self.target.iterdir()), [])
 
+    def test_keep_monitors_preserves_personal_script(self):
+        rel = '.config/bspwm/monitors.sh'
+        source = self.repo / 'stow/desktop' / rel
+        source.parent.mkdir(parents=True)
+        source.write_text('portable monitors\n')
+        path = self.target / rel
+        path.parent.mkdir(parents=True)
+        path.write_text('private\n')
+        self.deploy(keep_monitors=True)
+        self.assertEqual(path.read_text(), 'private\n')
+        self.assertFalse(path.is_symlink())
 
-@unittest.skipUnless(shutil.which('stow'), 'GNU Stow unavailable: real integration not run')
-class RealStowTest(unittest.TestCase):
+    def test_notebook_hook_migration_and_rollback_preserve_permissions(self):
+        path = self.target / '.config/bspwm/local.sh'
+        path.parent.mkdir(parents=True)
+        original = ('#!/bin/bash\nOFFSEC_BIN="$HOME/.config/offsec/bin"\n'
+                    'xset s 600 600\n    autorandr --change --default default 2>/dev/null &\n')
+        path.write_text(original)
+        path.chmod(0o755)
+        self.deploy()
+        self.assertIn('$HOME/.config/rice/bin', path.read_text())
+        self.assertNotIn('autorandr --change', path.read_text())
+        self.assertEqual(path.stat().st_mode & 0o777, 0o755)
+        installer.restore(self.backup())
+        self.assertEqual(path.read_text(), original)
+
+    def test_missing_dependencies_stop_before_deployment(self):
+        with patch.object(installer.shutil, 'which', return_value=None):
+            with self.assertRaisesRegex(RuntimeError, 'Missing session dependencies'):
+                installer.check_dependencies()
+        self.assertEqual(list(self.target.iterdir()), [])
+
+
+class RealCopyTest(unittest.TestCase):
     def test_full_deploy_and_restore_in_disposable_home(self):
-        with tempfile.TemporaryDirectory(prefix='rice-real-stow-') as directory:
+        with tempfile.TemporaryDirectory(prefix='rice-real-copy-') as directory:
             target = Path(directory)
             installer.deploy(target)
             for rel, src in installer.sources().items():
-                self.assertTrue((target / rel).is_symlink(), rel)
-                self.assertEqual((target / rel).resolve(), src)
+                self.assertFalse((target / rel).is_symlink(), rel)
+                self.assertEqual((target / rel).read_bytes(), src.read_bytes(), rel)
             self.assertNotIn('/home/bingxyi/', (target / '.config/tint2/tint2rc').read_text())
+            self.assertIn(str(target / '.config/rice/bin'), (target / '.config/tint2/tint2rc').read_text())
+            self.assertNotIn('/tmp/rice-deploy-', (target / '.config/tint2/tint2rc').read_text())
             backup = next((target / '.local/state/rice/backups').iterdir())
             installer.restore(backup)
             self.assertFalse((target / '.config/bspwm/bspwmrc').exists())

@@ -1,3 +1,12 @@
+# Recover the existing per-user runtime on minimal X11 launch environments.
+if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+    rice_runtime="/run/user/$(id -u)"
+    if [ -d "$rice_runtime" ] && [ -O "$rice_runtime" ]; then
+        export XDG_RUNTIME_DIR="$rice_runtime"
+    fi
+    unset rice_runtime
+fi
+
 #!/usr/bin/env bash
 # rice :: shared script library
 # Usage: . "$HOME/.config/rice/bin/lib.sh"
@@ -11,6 +20,17 @@ STATE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/rice"
 ROFI_THEME="$HOME/.config/rofi/themes/rice.rasi"
 ROFI_MENU_THEME="$HOME/.config/rofi/themes/menu.rasi"
 ROFI_GRID_THEME="$HOME/.config/rofi/themes/grid.rasi"
+
+
+# libdbus clients such as dunstctl need an explicit user bus on minimal X11 sessions.
+# Reuse the existing systemd user bus; never create a second isolated session bus.
+if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+    rice_user_bus="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/bus"
+    if [ -S "$rice_user_bus" ]; then
+        export DBUS_SESSION_BUS_ADDRESS="unix:path=$rice_user_bus"
+    fi
+    unset rice_user_bus
+fi
 
 mkdir -p "$STATE_DIR"
 

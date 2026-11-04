@@ -51,7 +51,13 @@ function main() {
     fi
 
     case "$action" in
-    focus) bspc desktop -f "$target" ;;
+    focus)
+        if [[ "$target" =~ ^([1-9]|10)$ ]]; then
+            "$HOME/.config/rice/bin/motion.py" --focus "$target"
+        else
+            bspc desktop -f "$target"
+        fi
+        ;;
     send) bspc node -d "$target" --follow ;;
     esac
 }

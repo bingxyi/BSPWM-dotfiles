@@ -135,12 +135,12 @@ tooltip {
 
   // Slide out to the right and fade. The left margin moves the panel;
   // opacity prevents an abrupt cutoff at the end of the transition.
-  transition: margin 240ms cubic-bezier(0.32, 0.72, 0, 1),
-              opacity 200ms ease-out;
+  transition: margin 180ms cubic-bezier(0.32, 0.72, 0, 1),
+              opacity 140ms ease-out;
 
   &.is-closed {
-    margin-left: 460px;
-    margin-right: -448px;
+    margin-left: 24px;
+    margin-right: -12px;
     opacity: 0;
   }
 
@@ -410,8 +410,8 @@ tooltip {
   border-radius: 0 0 26px 26px;
   padding: 20px 26px;
   margin: 0 12px 12px;
-  transition: margin 220ms cubic-bezier(0.32, 0.72, 0, 1), opacity 180ms ease-out;
-  &.is-closed { margin-top: -360px; margin-bottom: 372px; opacity: 0; }
+  transition: margin 180ms cubic-bezier(0.32, 0.72, 0, 1), opacity 140ms ease-out;
+  &.is-closed { margin-top: -24px; margin-bottom: 36px; opacity: 0; }
   &.is-open { margin-top: 0; opacity: 1; }
 }
 .media-cover { border-radius: 18px; background-color: $surface; }
@@ -426,3 +426,22 @@ tooltip {
 .media-time { font-size: 10px; color: $muted; }
 .media-volume { margin-top: 2px; }
 .media-progress trough, .media-progress highlight { min-height: 5px; }
+
+// Month grid: a filled Today badge plus persistent event dots, independent of selection.
+.calendar-month { font-weight: 600; font-size: 14px; }
+.calendar-today-label { color: $accent; font-size: 12px; font-weight: 600; }
+.calendar-weekday { color: $muted; font-size: 11px; padding: 5px 0; }
+.calendar-day { background: transparent; border: none; border-radius: 10px; padding: 5px 0 1px; min-width: 32px; min-height: 34px; color: $fg; transition: background-color 120ms ease; }
+.calendar-day:hover { background: $surface; }
+.calendar-day:disabled { opacity: 0; }
+.calendar-day.today { background: $accent; color: $bg; font-weight: bold; }
+.calendar-day.today:hover { background: $accent-alt; }
+.calendar-dot { color: $accent; font-size: 7px; min-height: 8px; }
+.calendar-day.today .calendar-dot { color: $bg; }
+.calendar-agenda { color: $fg-dim; font-size: 12px; padding: 3px 0; }
+.today-chip { color: $accent; }
+.calendar-add { margin-top: 6px; }
+
+.cc-error { color: $red; font-size: 12px; padding: 6px; }
+.qs-tile:disabled { opacity: 0.6; }
+.cc-chip.on { background: $accent; color: $bg; }

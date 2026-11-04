@@ -60,9 +60,19 @@ function current_profile() {
 
 function can_write() {
     command -v powerprofilesctl >/dev/null 2>&1 && return 0
+    [ -x "$RICE_DIR/bin/power_backend.py" ] && "$RICE_DIR/bin/power_backend.py" get >/dev/null 2>&1 && return 0
     [ -x "$HELPER" ] && return 0
     [ -w "$CPUFREQ/scaling_governor" ] && return 0
     return 1
+}
+
+function fast_profile() {
+    local selected status
+    [ -x "$RICE_DIR/bin/power_backend.py" ] || return 2
+    selected=$("$RICE_DIR/bin/power_backend.py" "$@")
+    status=$?
+    if [ "$status" -eq 0 ]; then announce "$selected"; fi
+    return "$status"
 }
 
 function set_profile() {
@@ -75,10 +85,18 @@ function set_profile() {
         ;;
     esac
 
+    local fast_status
+    fast_profile set "$p"; fast_status=$?
+    [ "$fast_status" -eq 2 ] || return "$fast_status"
+
     if command -v powerprofilesctl >/dev/null 2>&1; then
         local ppd="$p"
         [ "$p" = "power" ] && ppd="power-saver"
-        powerprofilesctl set "$ppd" 2>/dev/null && { announce "$p"; return 0; }
+        if powerprofilesctl set "$ppd" 2>/dev/null; then
+            if [ "$(current_profile)" = "$p" ]; then announce "$p"; return 0; fi
+            echo "Power service did not apply $p" >&2
+            return 1
+        fi
     fi
 
     if [ -x "$HELPER" ]; then
@@ -131,16 +149,19 @@ function gpu_blocked() { [ "$(state_get gpu_powermizer_blocked 0)" = 1 ]; }
 function announce() {
     state_set power_profile "$1"
     gpu_powermizer "$1"
-    notify "Power profile" "$(label_for "$1")" "$(icon_name_for "$1")" low
+    (notify "Power profile" "$(label_for "$1")" "$(icon_name_for "$1")" low 8>&-) >/dev/null 2>&1 &
     # tint2 does not handle RTMIN+3; that signal terminates the bar.
     # Executors already refresh status at the intervals configured in tint2rc.
-    eww_refresh
+    eww_refresh "$1"
 }
 
 function eww_refresh() {
     command -v eww >/dev/null 2>&1 || return 0
+    local profile="${1:-$(current_profile)}"
     eww -c "$HOME/.config/eww" update \
-        power_profile="$(current_profile)" 2>/dev/null || true
+        power_profile="$profile" \
+        power_label="$(label_for "$profile")" \
+        power_writable="$(can_write && printf 1 || printf 0)" 2>/dev/null || true
 }
 
 function icon_for() {
@@ -168,11 +189,28 @@ function icon_name_for() {
 }
 
 function cycle_profile() {
-    case "$(current_profile)" in
-    balanced) set_profile performance ;;
-    performance) set_profile power ;;
-    *) set_profile balanced ;;
-    esac
+    local fast_status
+    fast_profile cycle; fast_status=$?
+    [ "$fast_status" -eq 2 ] || return "$fast_status"
+    local current available next index
+    local -a profiles=(balanced performance power)
+    if command -v powerprofilesctl >/dev/null 2>&1; then
+        available=$(LC_ALL=C powerprofilesctl list 2>/dev/null |
+            awk '/^[ *]*(balanced|performance|power-saver):/ {gsub(/[*:]/, ""); gsub(/^[ \t]+|[ \t]+$/, ""); print}')
+        profiles=()
+        for next in balanced performance power; do
+            local backend="$next"; [ "$next" = power ] && backend=power-saver
+            grep -qx "$backend" <<< "$available" && profiles+=("$next")
+        done
+    fi
+    ((${#profiles[@]})) || { echo 'No writable power profiles' >&2; return 1; }
+    current=$(current_profile)
+    for index in "${!profiles[@]}"; do
+        if [[ "${profiles[$index]}" == "$current" ]]; then
+            set_profile "${profiles[$(((index+1)%${#profiles[@]}))]}"; return $?
+        fi
+    done
+    set_profile "${profiles[0]}"
 }
 
 function menu_profile() {
@@ -218,6 +256,10 @@ function main() {
         esac
         shift
     done
+
+    case "$action" in
+    set|cycle|restore) exec 8>"$STATE_DIR/power-profile.lock"; flock -w 4 8 || return 1;;
+    esac
 
     case "$action" in
     restore)
