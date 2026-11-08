@@ -214,14 +214,23 @@ With a configured remote and upstream branch, run:
 
 ```sh
 cd ~/rice
-./sync.sh
+./update.sh --dry-run
+./update.sh
 ```
 
-The script performs `git pull --ff-only`, redeploys the packages, and renders the
-theme templates. It refuses pending local changes and divergent history. Commit
-or stash edits before updating.
+`update.sh` fetches the configured upstream, checks it in a temporary worktree,
+runs the test suite, and preflights a three-way merge of installed edits before
+advancing the checkout with fast-forward. It deploys regular files with backups
+and renders the theme templates. Independent edits are combined; overlapping
+edits stop the update before installation, without writing conflict markers to
+live configs. Pending checkout edits and divergent Git history need explicit
+reconciliation first. See [update details](docs/updating.md).
 
-The inventory records content fingerprints of installed code. A later deployment
+`./update.sh --no-fetch` uses the already fetched upstream offline.
+`./sync.sh` remains the older strict updater, which rejects direct local edits.
+
+The inventory records content fingerprints of installed code and exact upstream
+baselines for subsequent merges. A plain `install.sh` deployment
 stops before changing files when direct local edits differ from the recorded
 version. Reconcile the edits with the checkout first. `--overwrite-local` is an
 explicit replacement option that saves the edited files in a new backup; avoid

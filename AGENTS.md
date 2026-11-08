@@ -28,8 +28,10 @@ físicas precisam de verificação viva, sem reinstalar para “alinhar” a mem
 
 ## Estrutura e linguagens
 
-- `install.sh` → `scripts/install.py`: Python, cópias reais, staging de templates e inventário schema2,
-  backups transacionais e restauração. `sync.sh` usa --update e --ff-only.
+- `install.sh` → `scripts/install.py`: Python, cópias reais, staging de templates e inventário schema3 com bases de merge,
+  backups transacionais e restauração. `update.sh` valida upstream em worktree,
+  usa fast-forward e merge de três vias no runtime com bases schema3.
+  `sync.sh` mantém o updater estrito anterior.
 - `stow/desktop`: bspwmrc, sxhkd, Kitty, Picom, Rofi, Eww e rice/bin Bash/Python.
 - `stow/shell`: .profile, .xprofile, .xinitrc, .zprofile, .zshrc (POSIX sh/Zsh).
 - `stow/editor`: Neovim/Lua/Lazy e integração de notas/engagement/Semgrep.

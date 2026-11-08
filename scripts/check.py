@@ -27,7 +27,7 @@ def main():
     shell = []
     files = [path for root in ('stow', 'defaults', 'scripts', 'tests', 'examples')
              for path in (REPO / root).rglob('*') if path.is_file()]
-    files += [REPO / 'install.sh', REPO / 'sync.sh']
+    files += [REPO / 'install.sh', REPO / 'sync.sh', REPO / 'update.sh']
     for path in files:
         if path.suffix == '.py':
             try:

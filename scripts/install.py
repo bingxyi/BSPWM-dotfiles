@@ -31,6 +31,97 @@ TEMPLATES = {
     "starship.toml.tpl": ".config/starship.toml",
     "betterlockscreenrc.tpl": ".config/betterlockscreenrc",
 }
+BASES = '.local/state/rice/bases'
+
+
+def previous_base(target, rel, previous, source=None):
+    """Recover the exact upstream bytes, never guess a base from local content."""
+    digest = previous.get('upstream', {}).get(rel, {}).get('sha256')
+    if digest:
+        if not re.fullmatch(r'[a-f0-9]{64}', digest):
+            raise RuntimeError('Invalid merge baseline digest')
+        path = target / BASES / digest
+        if path.is_symlink() or obstructing_parent(target, str(path.relative_to(target))):
+            raise RuntimeError('Unsafe merge baseline path')
+        data = path.read_bytes()
+        if hashlib.sha256(data).hexdigest() != digest:
+            raise RuntimeError(f'Corrupt merge baseline for {rel}')
+        return data
+    # schema2 kept only hashes. Recover matching historical source from Git.
+    digest = previous.get('files', {}).get(rel, {}).get('sha256')
+    if digest and source is not None:
+        name = str(source.relative_to(REPO))
+        history = subprocess.run(['git', '-C', str(REPO), 'log', '--all', '--format=%H', '--', name],
+                                 capture_output=True, text=True, check=True)
+        for revision in history.stdout.splitlines():
+            blob = subprocess.run(['git', '-C', str(REPO), 'show', f'{revision}:{name}'],
+                                  capture_output=True)
+            if not blob.returncode and hashlib.sha256(blob.stdout).hexdigest() == digest:
+                return blob.stdout
+    return None
+
+
+def merge_bytes(local, base, incoming):
+    if local == incoming or incoming == base:
+        return local
+    if local == base:
+        return incoming
+    if b'\0' in local + base + incoming:
+        raise RuntimeError('both sides changed a binary file')
+    with tempfile.TemporaryDirectory(prefix='rice-merge-') as directory:
+        paths = [Path(directory) / name for name in ('local', 'base', 'incoming')]
+        for path, data in zip(paths, (local, base, incoming)):
+            path.write_bytes(data)
+        result = subprocess.run(['git', 'merge-file', '-p', '--diff3',
+                                 '-L', 'installed', '-L', 'previous upstream', '-L', 'incoming',
+                                 *map(str, paths)], capture_output=True)
+        if result.returncode:
+            raise RuntimeError('overlapping edits; installed file retained')
+        return result.stdout
+
+
+def merge_payload(target, stage, selected, previous, paths):
+    """Preflight every merge before the deployment transaction touches HOME."""
+    merged = []
+    conflicts = []
+    for rel in paths:
+        incoming = stage / rel
+        local = target / rel
+        if not exists(local):
+            if rel in previous.get('files', {}) or rel in previous.get('upstream', {}):
+                conflicts.append(rel + ': locally deleted; restore or reconcile explicitly')
+            continue
+        if not local.is_file() or local.is_symlink():
+            conflicts.append(rel + ': symlink/non-regular destination; migrate with install.sh first')
+            continue
+        if local.read_bytes() == incoming.read_bytes():
+            continue
+        expected = previous.get('files', {}).get(rel)
+        if not previous.get('upstream', {}).get(rel) and fingerprint(local) == expected:
+            continue  # An unchanged schema2 file can upgrade without recovering its base.
+        try:
+            base = previous_base(target, rel, previous, selected.get(rel))
+            if base is None:
+                raise RuntimeError('exact previous base unavailable; reconcile explicitly')
+            data = merge_bytes(local.read_bytes(), base, incoming.read_bytes())
+            incoming.write_bytes(data)
+            # Preserve personal permissions when retaining/merging personal content.
+            if local.read_bytes() != base:
+                incoming.chmod(local.stat().st_mode & 0o777)
+            merged.append(rel)
+        except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
+            conflicts.append(f'{rel}: {error}')
+    if conflicts:
+        raise RuntimeError('Merge stopped before installation:\n' + '\n'.join(conflicts))
+    if merged:
+        # Check the combined payload, including cross-file binds and templates.
+        with tempfile.TemporaryDirectory(prefix='rice-merged-check-') as directory:
+            repo = Path(directory) / 'repo'
+            shutil.copytree(REPO, repo, ignore=shutil.ignore_patterns('.git', '__pycache__', '.install.lock'))
+            for rel, source in selected.items():
+                shutil.copy2(stage / rel, repo / source.relative_to(REPO))
+            subprocess.run([sys.executable, '-B', str(repo / 'scripts/check.py')], check=True)
+    return merged
 
 
 def exists(path):
@@ -177,7 +268,7 @@ def check_dependencies():
 
 
 def deploy(target, dry_run=False, keep_monitors=False, adopt_monitor_layout=False,
-           overwrite_local=False):
+           overwrite_local=False, merge_local=False):
     """Deploy independent regular files; retain local edits unless explicitly replaced."""
     selected = sources(keep_monitors)
     preserved = PRESERVED if keep_monitors else set()
@@ -197,7 +288,7 @@ def deploy(target, dry_run=False, keep_monitors=False, adopt_monitor_layout=Fals
             current = fingerprint(target / rel)
             if current != expected and current != fingerprint(selected[rel]):
                 conflicts.append(rel)
-    if conflicts and not overwrite_local:
+    if conflicts and not overwrite_local and not merge_local:
         raise RuntimeError('Local edits retained; no files changed: ' + ', '.join(conflicts) +
                            '. Reconcile them with ~/rice, or use --overwrite-local to replace with backup.')
     generated = {}
@@ -245,9 +336,28 @@ def deploy(target, dry_run=False, keep_monitors=False, adopt_monitor_layout=Fals
             path.write_text(data)
             path.chmod(mode)
             desired[rel] = path
+        # Merge static templates before rendering so their local edits survive.
+        merged = merge_payload(target, stage, selected, previous, selected) if merge_local else []
         render(stage, home=target)
         desired.update({rel: stage / rel for rel in TEMPLATES.values()})
-        state = {'schema': 2, 'mode': 'copy',
+        # Baselines contain upstream bytes rather than the locally merged result.
+        upstream = {}
+        for rel in [*selected, *TEMPLATES.values()]:
+            source = selected.get(rel, stage / rel)
+            data = source.read_bytes()
+            digest = hashlib.sha256(data).hexdigest()
+            upstream[rel] = {'sha256': digest}
+            base_rel = BASES + '/' + digest
+            if obstructing_parent(target, base_rel) or (target / base_rel).is_symlink():
+                raise RuntimeError('Unsafe merge baseline destination')
+            path = stage / base_rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
+            path.chmod(0o600)
+            desired[base_rel] = path
+        if merge_local:
+            merged += merge_payload(target, stage, selected, previous, TEMPLATES.values())
+        state = {'schema': 3, 'mode': 'copy', 'upstream': upstream,
                  'files': {rel: fingerprint(stage / rel) for rel in selected},
                  'sources': {rel: str(src) for rel, src in selected.items()}}
         save(stage / INVENTORY, state)
@@ -266,7 +376,8 @@ def deploy(target, dry_run=False, keep_monitors=False, adopt_monitor_layout=Fals
                 raise RuntimeError(f'Symlink ancestor of previous managed file {path}')
             unchanged = (path.is_symlink() and isinstance(expected, str) and
                          path.resolve() == Path(expected).resolve()) or (
-                             isinstance(expected, dict) and fingerprint(path) == expected)
+                             isinstance(expected, dict) and fingerprint(path) ==
+                             previous.get('upstream', {}).get(rel, expected))
             if unchanged:
                 desired[rel] = None
             else:
@@ -281,6 +392,7 @@ def deploy(target, dry_run=False, keep_monitors=False, adopt_monitor_layout=Fals
             print(json.dumps({'target': str(target), 'mode': 'copy', 'backup': sorted(backups),
                               'install': sorted(changes), 'preserve': sorted(preserved),
                               'migrate': sorted(generated), 'local_conflicts': conflicts,
+                              'merged': merged,
                               'retained_removed_local_files': retained_removed}, indent=2))
             return
         backup_root = target / '.local/state/rice/backups'
@@ -332,6 +444,8 @@ def deploy(target, dry_run=False, keep_monitors=False, adopt_monitor_layout=Fals
             raise
         command = shlex.join([str(REPO / 'install.sh'), '--restore', str(backup)])
         print(f'Installed regular files: {target}\nBackup: {backup}\nRestore: {command}')
+        if merged:
+            print('Merged local files: ' + ', '.join(merged))
         if retained_removed:
             print('Retained personal files removed upstream: ' + ', '.join(retained_removed))
 
@@ -347,6 +461,7 @@ def main():
     )
     parser.add_argument("--restore", type=Path)
     parser.add_argument('--overwrite-local', action='store_true', help='replace edited installed code with repository files, preserving a backup')
+    parser.add_argument('--merge-local', action='store_true', help='three-way merge local edits using exact saved upstream bases')
     args = parser.parse_args()
     target = args.target.expanduser().resolve()
     if not target.is_dir() or target == Path("/") or target.is_relative_to(REPO):
@@ -357,6 +472,8 @@ def main():
         raise RuntimeError("--dry-run cannot be combined with --update/--restore")
     if args.keep_monitors and args.adopt_monitor_layout:
         raise RuntimeError('--keep-monitors cannot be combined with --adopt-monitor-layout')
+    if args.merge_local and (args.overwrite_local or args.update):
+        raise RuntimeError('--merge-local cannot be combined with --overwrite-local/--update; use update.sh')
     # Serialize per target without writing to the home directory during a dry run.
     with (REPO / ".install.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
@@ -379,7 +496,7 @@ def main():
                 )
             if target == Path.home().resolve() and not args.dry_run:
                 check_dependencies()
-            deploy(target, args.dry_run, args.keep_monitors, args.adopt_monitor_layout, args.overwrite_local)
+            deploy(target, args.dry_run, args.keep_monitors, args.adopt_monitor_layout, args.overwrite_local, args.merge_local)
 
 
 if __name__ == "__main__":
