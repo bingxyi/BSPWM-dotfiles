@@ -423,16 +423,17 @@ class Application(Gtk.Application):
         Gtk.Application.do_startup(self);theme()
 
     def do_command_line(self,command):
-        parser=argparse.ArgumentParser();parser.add_argument('mode',choices=['bluetooth','binds','events']);parser.add_argument('--date')
+        parser=argparse.ArgumentParser();parser.add_argument('mode',choices=['bluetooth','binds','events','animations']);parser.add_argument('--date')
         args=parser.parse_args(command.get_arguments()[1:])
         window=self.windows_by_mode.get(args.mode)
         if window:window.present();return 0
-        window={'bluetooth':lambda:BluetoothWindow(self),'binds':lambda:BindWindow(self),'events':lambda:EventWindow(self,args.date)}[args.mode]()
+        window={'bluetooth':lambda:BluetoothWindow(self),'binds':lambda:BindWindow(self),'events':lambda:EventWindow(self,args.date),'animations':lambda:__import__('animation_ui').AnimationWindow(self)}[args.mode]()
         self.windows_by_mode[args.mode]=window
         window.connect('destroy',lambda *_:self.windows_by_mode.pop(args.mode,None))
         window.show_all();window.present();return 0
 
 
 if __name__=='__main__':
+    sys.modules.setdefault('desktop_ui',sys.modules[__name__])
     GLib.set_prgname('rice-desktop');Gdk.set_program_class('RiceTools')
     raise SystemExit(Application().run(sys.argv))

@@ -11,11 +11,27 @@ import sys
 import time
 
 from motion_client import request, socket_path
+from animation_settings import load as animation_preferences
 
 
 def easing(progress):
     progress=max(0.,min(1.,progress))
     return 1-(1-progress)**3
+
+
+class FrameGate:
+    """Cap redraws without dropping every third tick on a 120.21 Hz clock."""
+    def __init__(self,fps):
+        self.period=1/fps if fps else 0
+        self.deadline=None
+
+    def ready(self,now):
+        if not self.period:return True
+        if self.deadline is not None and now+.0005<self.deadline:return False
+        if self.deadline is None or now-self.deadline>self.period:
+            self.deadline=now+self.period
+        else:self.deadline+=self.period
+        return True
 
 
 def focus_command(target,send=False):
@@ -25,14 +41,16 @@ def focus_command(target,send=False):
 
 
 def serve():
+    if (Path.home()/'.config/rice/compositor-safe-mode').exists():return
     import gi
     gi.require_version('Gtk','3.0');gi.require_version('GdkX11','3.0')
     from gi.repository import Gtk,Gdk,GdkX11,GLib
     import cairo
 
     class Overlay(Gtk.Window):
-        def __init__(self,pixbuf,rect,direction,duration):
+        def __init__(self,pixbuf,rect,direction,duration,style,fps):
             super().__init__(type=Gtk.WindowType.POPUP)
+            self.style=style;self.gate=FrameGate(fps)
             self.started=None;self.duration=duration;self.direction=direction;self.progress=0.;self.pixbuf=pixbuf
             self.set_wmclass('rice-motion','RiceMotion')
             self.set_app_paintable(True);self.set_decorated(False)
@@ -43,14 +61,30 @@ def serve():
             self.move(rect[0],rect[1]);self.set_default_size(rect[2],rect[3])
             self.connect('draw',self.draw_frame)
             self.realize();self.get_window().input_shape_combine_region(cairo.Region(),0,0)
+            # Upload/convert once, rather than rebuilding a Cairo source each frame.
+            self.surface=Gdk.cairo_surface_create_from_pixbuf(pixbuf,1,self.get_window())
             self.show_all();self.get_display().flush()
+
+        def when_painted(self,callback):
+            # Wait for GTK's first submitted frame, not an arbitrary 50 ms sleep.
+            clock=self.get_frame_clock()
+            def painted(_clock):
+                clock.disconnect(handler)
+                callback()
+            handler=clock.connect('after-paint',painted)
+            self.queue_draw()
 
         def draw_frame(self,_widget,context):
             context.set_operator(cairo.OPERATOR_SOURCE);context.set_source_rgba(0,0,0,0);context.paint()
             context.set_operator(cairo.OPERATOR_OVER)
-            offset=-self.direction*min(80,self.pixbuf.get_width()*.06)*easing(self.progress)
-            Gdk.cairo_set_source_pixbuf(context,self.pixbuf,offset,0)
-            context.paint_with_alpha(1-easing(self.progress));return False
+            eased=easing(self.progress)
+            distance=self.pixbuf.get_width() if self.style=='slide' else min(80,self.pixbuf.get_width()*.06)
+            offset=-self.direction*distance*eased if self.style in ('slide','slide-fade') else 0
+            if self.style=='zoom':
+                width=self.pixbuf.get_width();height=self.pixbuf.get_height();scale=1+.08*eased
+                context.translate(width/2,height/2);context.scale(scale,scale);context.translate(-width/2,-height/2)
+            context.set_source_surface(self.surface,offset,0)
+            context.paint_with_alpha(1 if self.style=='slide' else 1-eased);return False
 
         def start(self):
             self.started=time.monotonic();self.add_tick_callback(self.tick)
@@ -58,6 +92,8 @@ def serve():
 
         def tick(self,_widget,_clock):
             self.progress=min(1.,(time.monotonic()-self.started)/self.duration)
+            now=time.monotonic()
+            if self.progress<1 and not self.gate.ready(now):return True
             self.queue_draw()
             if self.progress>=1:
                 self.hide();return False
@@ -77,19 +113,23 @@ def serve():
             if self.overlay:
                 self.overlay.destroy();self.overlay=None
 
-        def capture(self,rect,direction=1,duration=.18):
+        def capture(self,rect,direction=1,kind='workspace'):
+            preferences=animation_preferences()
+            if not preferences['enabled'] or not preferences[kind+'_enabled']:return False
+            duration=preferences[kind+'_ms']/1000
+            style=preferences[kind+'_type'];fps=preferences['fps'] if preferences['limit_fps'] else 0
             # Let the actual window action proceed immediately without a compositor.
             if not self.display.supports_composite() or not self.root.get_screen().is_composited():return False
             pixbuf=Gdk.pixbuf_get_from_window(self.root,*rect)
             if not pixbuf:return False
-            self.cancel();self.overlay=Overlay(pixbuf,rect,direction,duration)
+            self.cancel();self.overlay=Overlay(pixbuf,rect,direction,duration,style,fps)
             # A lost commit must never leave a stale screenshot on the screen.
             generation=self.generation
             def expire():
                 if generation==self.generation:
                     self.pending=0;self.cancel()
                 return False
-            self.pending=GLib.timeout_add(450,expire)
+            self.pending=GLib.timeout_add(max(450,int(duration*1000)+150),expire)
             return True
 
         def accept(self,_fd,_condition):
@@ -130,10 +170,10 @@ def serve():
                 if not window:raise ValueError('Window is unavailable')
                 _,x,y=window.get_origin();_,_,width,height=window.get_geometry()
                 if message.get('tabbar'):height=min(64,height)
-                if not self.capture((x,y,width,height),int(message.get('direction',1)),.14):
+                if not self.capture((x,y,width,height),int(message.get('direction',1)),'tabs'):
                     connection.sendall(b'error\n');connection.close();return
                 self.token=message.get("token")
-                GLib.timeout_add(50,self.reply,connection);return
+                self.overlay.when_painted(lambda:self.reply(connection));return
             if operation=='focus':
                 target=str(message['target']);command=focus_command(target,message.get('send',False))
                 tree=json.loads(subprocess.check_output(['bspc','wm','-d'],text=True,timeout=1))
@@ -156,7 +196,7 @@ def serve():
                     except subprocess.SubprocessError as error:print('motion:',error,file=sys.stderr,flush=True)
                     if self.overlay:self.overlay.start()
                     return False
-                if captured:GLib.timeout_add(50,switch)
+                if captured:self.overlay.when_painted(switch)
                 else:switch()
                 return
             raise ValueError('Unknown motion operation')

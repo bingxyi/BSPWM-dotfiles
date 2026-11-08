@@ -1,3 +1,62 @@
+## Auditoria e portabilidade — 2026-11-08
+
+Sessão revalidada: eDP-1 único, 1080p/120,21Hz, desktops1–10, br/abnt2,
+Ember Crimson/Nyx. FT-Labs ativo com config gerada; safe-mode ausente.
+As234fontes estáticas coincidem com runtime; áudio/rede/Bluetooth ativos.
+Fish passa a ser dependência explícita, com config inicial preservável.
+Procedimento de migração, versões, exclusões privadas e limites:
+[portability.md](portability.md). Snapshots abaixo são históricos.
+
+## Fluidez de animações — 2026-11-05
+
+Patch aplicado e sincronizado em runtime e fonte. FT-Labs df4c6 confirmado por
+capacidade e processo; Iris Xe acelerada; HDMI60Hz e eDP120,21Hz preservados.
+Molas400/400, massa0,5, damping20, clamping=true; workspace140ms. Efeitos,
+blur3, sombras, opacidade, VSync e preferência local sem limite FPS preservados.
+Motion aguarda after-paint em vez de50ms fixos, reutiliza superfície Cairo e
+corrige o teto de frames em refresh fracionário. Evidências, limites, fontes
+e reversão: [picom-fluidity.md](picom-fluidity.md).92testes passaram; shellcheck ausente.
+
+## Emergência de tela preta — 2026-11-04 21:15 UTC
+
+ESTADO HISTÓRICO: modo de recuperação observado em 2026-11-04, posterior à entrega da GUI de animações.
+Em 2026-11-05 o marcador estava ausente e FT-Labs/motion já estavam ativos; veja picom-fluidity.md.
+Usuário relatou tela toda preta; Picom com config gerada ainda estava em execução,
+portanto a causa desta recorrência não foi provada como encerramento do aplicador.
+Recuperação: fechar Eww, encerrar motion, iniciar Picom diretamente com
+`~/.config/picom/picom-basic.conf` sem FPS preload e atualizar a janela Kitty.
+O usuário confirmou que o desktop/terminal voltaram.
+
+`~/.config/rice/compositor-safe-mode` é o marcador local persistente.
+O launcher seleciona basic e chama `setsid picom --config ...` diretamente;
+`motion.py --serve` sai sem iniciar; a GUI bloqueia Apply nesse modo.
+Preferências locais: enabled=false, limit_fps=false, workspace_enabled=false,
+tabs_enabled=false. Originais preservados em
+`~/.local/state/rice/changes/emergency-display-20261104T211558Z/animations-before.json`.
+Não reativar automaticamente as animações/limitador ao retomar outra tarefa.
+O código da GUI continua no checkout para revisão; testes anteriores não provam
+estabilidade visual suficiente para reativar esses componentes nesta máquina.
+
+## Animation settings — 2026-11-04
+
+SUPER + A abre `desktop_ui.py animations`; shortcuts (SUPER + slash) mostra
+`animation settings`. A GUI usa `animation_ui.py`, com preferências validadas em
+`animation_settings.py`. Padrão: animações ligadas, limite de 60 FPS e VSync.
+Configurações locais: `~/.config/rice/animations.json`; backups de aplicação:
+`~/.local/state/rice/animation-backups/`; configs derivadas e biblioteca de limite:
+`~/.cache/rice/animations/`. As bases Picom preservam aparência e exclusões.
+O limite GLX/EGL é compilado de `rice/lib/picom-frame-limit.c` com cc; é carregado
+somente no Picom e não altera refresh/resolução. Medição real: 59,364 FPS.
+O renderizador motion lê as mesmas escolhas para workspace e Kitty.
+
+Regressão de tela preta na central foi diagnosticada como ausência do compositor.
+`picom-launch.sh` usa setsid para sobreviver ao encerramento do aplicador;
+`panel.sh` verifica a seleção X11 de composição antes de criar backdrops de tela
+inteira. Sem compositor, abre apenas o painel com Escape, evitando tela preta.
+Testes: 87 passaram; 57 scripts, 119 binds e 10 templates verificados.
+Procedimento solicitado: sincronizar runtime/~/rice e registrar contexto em
+notas de memória ao concluir alterações autorizadas; não presumir commit/push.
+
 ## Validação das melhorias — 2026-11-04
 
 Barra: corrigidos caminhos de staging deixados nos executors gerados e glifos
@@ -1375,3 +1434,65 @@ se presentes. A suite usa HOMEs temporários, mocks de sessão e cópias reais c
 Registre skips. Checks escrevem temporários/caches; não os apresente como
 operações sem qualquer escrita. Reexecute depois de mudanças que afetem o alvo.
 
+
+
+## Central de controle bloqueada — 2026-11-05
+
+Falha confirmada ao abrir Super+Shift+N: `panel.sh` desistia silenciosamente
+após dois segundos no flock. `lslocks` e `/proc/31162/fd/9` identificaram um
+`calendar_state.py --watch` órfão (PPID 1, iniciado às 17:04) segurando
+`/run/user/1000/rice-popup.lock`; o daemon Eww atual era posterior (17:07).
+O wrapper `ew()` agora fecha o descritor 9 em todas as chamadas, pois até uma
+consulta Eww pode iniciar daemon/listeners. Timeout do lock retorna erro 1 e
+mensagem em stderr, em vez de sucesso silencioso. Runtime e fonte sincronizados;
+backup em `~/.local/state/rice/changes/panel-lock-20261105T202200Z/`.
+Somente o watcher órfão identificado foi encerrado. Abertura real confirmou
+`control: control`, `cc_reveal=true` e lock livre. Não houve reinício de sessão.
+Um teste com filho persistente reproduziu a retenção antes da correção.
+
+Para diagnosticar recorrência no terminal da sessão:
+
+```sh
+~/.config/rice/bin/control.sh --open
+eww -c ~/.config/eww active-windows
+lslocks -o PID,COMMAND,TYPE,MODE,PATH
+```
+
+Se a abertura direta funcionar, comparar Super+C e Super+Shift+N e investigar
+sxhkd. Se houver `popup lock busy`, identificar o detentor antes de recuperar;
+não apagar o arquivo de lock (isso permite bloqueios concorrentes em inodes
+diferentes), não usar pkill genérico e não reinstalar o rice. Essa falha prova
+um problema de ciclo de vida de processos; não prova a causa de outros bugs.
+
+
+## Áudio Bluetooth e aplicativos sem acesso à sessão — 2026-11-06
+
+O H3 estava conectado, como saída padrão e sem mudo, mas o teste de áudio
+não foi ouvido com A2DP/AAC. Após trocar para `a2dp-sink-sbc`, o usuário
+confirmou ouvir o teste. Isso demonstra recuperação nesta conexão, sem provar
+uma incompatibilidade permanente do codec AAC.
+
+Firefox e BSPWM estavam sem `XDG_RUNTIME_DIR` e
+`DBUS_SESSION_BUS_ADDRESS`. Uma consulta pactl usando o ambiente mínimo do
+Firefox reproduziu `Connection refused`, enquanto a mesma consulta com o
+runtime e o bus existentes funcionou. Spotify Flatpak registrava bus
+`disabled:` nas tentativas anteriores; iniciado com o ambiente correto,
+criou uma janela e um cliente/fluxo de áudio. O Firefox foi fechado normalmente,
+reaberto com o ambiente corrigido e restauração única da sessão; passou a
+aparecer como cliente no PipeWire. Confirmação auditiva do YouTube fica a cargo
+do usuário, pois presença do cliente não comprova reprodução audível.
+
+`launcher.sh` agora carrega `~/.config/rice/env` antes de abrir Rofi. Isso
+permite às aplicações abertas pelo menu herdar runtime e bus, mesmo que o
+BSPWM atual ainda tenha o ambiente anterior. A mudança foi sincronizada em
+runtime e fonte. `~/.xprofile` já carrega esse arquivo para novas sessões;
+não houve reinício do WM ou da sessão. O atalho direto de `rofi -show run`
+não passa por `launcher.sh`, portanto esta correção não altera esse caminho.
+
+Backup privado dos lançadores e dos arquivos da sessão do Firefox:
+`~/.local/state/rice/changes/audio-apps-20261106T191020Z/`.
+Para reverter somente o lançador, copiar `launcher-runtime` desse backup para
+`~/.config/rice/bin/launcher.sh` e `launcher-source` para
+`~/rice/stow/desktop/.config/rice/bin/launcher.sh`. Não restaurar a sessão do
+Firefox sobre trabalho posterior. Nenhuma configuração de compositor ou
+monitor foi alterada.

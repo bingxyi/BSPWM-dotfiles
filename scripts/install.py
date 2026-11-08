@@ -64,6 +64,8 @@ def sources(keep_monitors=False):
     for package in PACKAGES:
         root = REPO / "stow" / package
         for path in sorted(root.rglob("*")):
+            if "__pycache__" in path.parts or path.suffix in (".pyc", ".pyo"):
+                continue
             if path.is_file() and path.name != ".stow-local-ignore":
                 rel = str(path.relative_to(root))
                 if keep_monitors and rel in PRESERVED:
@@ -158,7 +160,7 @@ def monitor_preferences(target):
 
 def check_dependencies():
     required = ('bash', 'bspwm', 'bspc', 'sxhkd', 'xrandr', 'picom',
-                'rofi', 'kitty', 'jq', 'dunst', 'zsh', 'nvim', 'xsettingsd', 'flock', 'xinput')
+                'rofi', 'kitty', 'fish', 'cc', 'jq', 'dunst', 'zsh', 'nvim', 'xsettingsd', 'flock', 'xinput')
     missing = [command for command in required if not shutil.which(command)]
     if not shutil.which('tint2') and not shutil.which('eww'):
         missing.append('tint2 or eww')

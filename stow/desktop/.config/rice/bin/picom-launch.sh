@@ -84,6 +84,9 @@ function picom_major() {
 }
 
 function pick_config() {
+    if [ -f "$RICE_DIR/compositor-safe-mode" ]; then
+        printf '%s' "$CONFIG_BASIC"; return 0
+    fi
     local major
     # FT-Labs uses vgit-*; a missing numeric major must not disable its engine.
     if picom --help 2>&1 | grep -q -- '--animation-stiffness-in-tag'; then
@@ -103,7 +106,12 @@ function start_picom() {
     # picom writes startup warnings to stderr. Redirect them to a log
     # so they do not inherit the session stderr and appear on screen
     # immediately after login. Keep the log for troubleshooting.
-    picom --config "$config" >"$LOG" 2>&1 9>&- &
+    if [ -f "$RICE_DIR/compositor-safe-mode" ]; then
+        # Recovery must bypass the preference renderer and FPS preload entirely.
+        setsid env -u LD_PRELOAD -u RICE_PICOM_FPS -u RICE_PICOM_FRAME_STATS picom --config "$CONFIG_BASIC" >"$LOG" 2>&1 9>&- &
+    else
+        setsid "$RICE_DIR/bin/animation_settings.py" --run "$config" >"$LOG" 2>&1 9>&- &
+    fi
     pid=$!
     sleep 2
     kill -0 "$pid" 2>/dev/null

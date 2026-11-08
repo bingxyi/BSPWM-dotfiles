@@ -97,3 +97,14 @@ antigos em resolved/. O HDMI fica fisicamente à esquerda: override privado
 `RICE_MONITOR_LAYOUT=ordered`, ordem HDMI-1 eDP-1. Essa ordem física é independente
 da tela principal e prevalece sobre geometrias antigas/perfis autorandr nesse
 modo. Preserve é o padrão portátil.35testes e118binds foram validados.
+
+## Procedimento padrão solicitado pelo usuário — 2026-11-04
+
+Ao concluir uma intervenção autorizada neste ambiente BSPWM, sincronize o código
+e a documentação correspondentes com `~/rice` e registre o contexto relevante
+na memória. Esta preferência foi solicitada explicitamente pelo usuário.
+Para memórias, use pequenas notas em
+`~/.codex/memories/extensions/ad_hoc/notes/`, respeitando as regras do runtime;
+não edite MEMORY.md diretamente nem armazene credenciais ou dados pessoais.
+Preferências mutáveis continuam locais quando apropriado. Repositório atualizado
+não significa commit/push: só execute esses passos quando o usuário pedir.

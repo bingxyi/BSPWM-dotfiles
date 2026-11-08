@@ -68,3 +68,8 @@ stow/**/custom.sxhkdrc
 stow/**/custom-binds.json
 stow/**/bind-history/
 stow/**/calendar/events.json
+
+# Per-user animation choices; portable defaults live in animation_settings.py.
+stow/**/animations.json
+stow/**/compositor-safe-mode
+stow/**/fish_variables

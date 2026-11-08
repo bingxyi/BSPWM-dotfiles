@@ -48,6 +48,10 @@ def main():
             result = subprocess.run(['zsh', '-n', str(path)], capture_output=True, text=True)
             if result.returncode:
                 errors.append(result.stderr)
+        elif path.suffix == '.fish' and shutil.which('fish'):
+            result = subprocess.run(['fish', '-n', str(path)], capture_output=True, text=True)
+            if result.returncode:
+                errors.append(result.stderr)
         if path.name == 'bspwmrc' and not os.access(path, os.X_OK):
             errors.append(f'Not executable: {path}')
         if path.suffix in ('.sh', '.py', '.tpl', '.yuck', '.desktop') or path.name.startswith('.z'):
@@ -86,6 +90,8 @@ def main():
         print('SKIP shellcheck: executable unavailable')
     if not shutil.which('luac'):
         print('SKIP Lua syntax: luac unavailable')
+    if not shutil.which('fish'):
+        print('SKIP fish syntax: fish unavailable')
     print(f'Checked {len(shell)} shell files, {len(seen)} hotkeys and {len(install.TEMPLATES)} templates')
     for error in errors:
         print(error, file=sys.stderr)

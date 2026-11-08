@@ -7,7 +7,9 @@ RUNTIME="${XDG_RUNTIME_DIR:-$HOME/.cache/rice}"
 mkdir -p "$RUNTIME"
 KEY_PID="$RUNTIME/rice-popup-keys.pid"
 KEY_CONFIG="$HOME/.config/rice/popup-keys.sxhkd"
-ew() { eww -c "$CONFIG" "$@"; }
+# Eww commands may spawn a daemon/listeners, including active-windows.
+# Never let those long-lived children inherit our popup transaction lock.
+ew() { eww -c "$CONFIG" "$@" 9>&-; }
 active() { ew active-windows 2>/dev/null; }
 stop_keys() {
     local pid cmd
@@ -40,7 +42,7 @@ open|toggle|close|close-all) ;;
 esac
 exec 9>"$RUNTIME/rice-popup.lock"
 # Wait briefly so Escape/clicks during the opening frame are not lost.
-flock -w 2 9 || exit 0
+flock -w 2 9 || { echo 'rice panel: popup lock busy; another process is holding it' >&2; exit 1; }
 if [[ "$action" == close || "$action" == close-all ]]; then
     close_panels
     [[ "$action" == close-all ]] && ew close-all >/dev/null 2>&1
@@ -58,9 +60,14 @@ close_panels "$windows"
 monitors=$(xrandr --listmonitors)
 mapfile -t screens < <(awk '/^ *[0-9]+:/ {gsub(":","",$1); print $1}' <<< "$monitors")
 primary=$(awk '/^ *[0-9]+: \+\*/ {gsub(":","",$1); print $1; exit}' <<< "$monitors")
-for screen in "${screens[@]}"; do
-    ew open cc_backdrop --id "cc_backdrop_$screen" --screen "$screen" || { close_panels; exit 1; }
-done
+# A transparent fullscreen window is opaque black without an X11 compositor.
+# Keep the panel and Escape usable if composition is unavailable; never cover
+# the desktop with an opaque fallback backdrop.
+if "$HOME/.config/rice/bin/animation_settings.py" --compositor-active; then
+    for screen in "${screens[@]}"; do
+        ew open cc_backdrop --id "cc_backdrop_$screen" --screen "$screen" || { close_panels; exit 1; }
+    done
+fi
 sxhkd -c "$KEY_CONFIG" </dev/null >"$RUNTIME/rice-popup-keys.log" 2>&1 9>&- &
 printf '%s\n' "$!" > "$KEY_PID"
 if ! ew open "$window" --screen "${primary:-0}"; then close_panels; exit 1; fi

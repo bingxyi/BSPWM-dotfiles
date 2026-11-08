@@ -26,17 +26,21 @@ does not install or remove system packages.
 
 | Component | Packages and tools |
 | --- | --- |
-| Installer | `git`, Python 3.10+, `bash`, `coreutils`, `util-linux` |
+| Installer | `git`, Python 3.10+, `gcc` (FPS limiter), `bash`, `coreutils`, `util-linux` |
 | X11 session | `xorg-server`, `xorg-xinit`, `xorg-xrandr`, `xorg-xinput`, `xorg-xprop`, `xorg-xset`, `xorg-xsetroot`, `xorg-setxkbmap`, `xorg-xdpyinfo`, `xdotool` |
 | Desktop | `bspwm`, `sxhkd`, `picom`, `tint2`, `rofi`, `dunst`, `kitty`, `jq` |
 | Panels and integration | Eww with X11 support (AUR), `playerctl`, `python-gobject`, `python-cairo`, `gtk3`, `libnotify`, `network-manager-applet`, `blueman`, `polkit-gnome`, `wmctrl` |
-| Shell and editor | `zsh`, `neovim`, `starship`, `eza`, `bat`, `fd`, `fzf`, `ripgrep`, `zoxide`, `zsh-autosuggestions`, `zsh-syntax-highlighting` |
+| Shell and editor | `fish` (Kitty shell), `zsh`, `neovim`, `starship`, `eza`, `bat`, `fd`, `fzf`, `ripgrep`, `zoxide`, `zsh-autosuggestions`, `zsh-syntax-highlighting` |
+| Audio, Bluetooth and network | `pipewire`, `pipewire-pulse`, `wireplumber`, `bluez`, `bluez-utils`, `networkmanager` |
 | Fonts and appearance | `ttf-jetbrains-mono-nerd`, `inter-font`, `papirus-icon-theme`, `xsettingsd` |
 | Optional features | `feh`, `imagemagick`, `betterlockscreen` or `i3lock`, `brightnessctl`, `xclip`, Greenclip (AUR), `pavucontrol`, `power-profiles-daemon`, `firefox`, `thunar`, `yazi`, `openvpn`, `flameshot`, `ffmpeg` |
 
 Catppuccin GTK and cursor themes are optional; palettes provide Adwaita fallbacks.
 
 ## Installation
+
+For migration from the notebook to another desktop, follow the
+[portability checklist and verified environment](docs/portability.md).
 
 Clone the repository as your versioned distribution source. Installation copies
 regular files into the standard application directories; edit the installed code
@@ -289,3 +293,42 @@ reorder the active tab with a short transition. Kitty remote control stays off.
 Workspace shortcuts, the selector and bar wheel use the same transition path.
 The workspace feed for both profiles uses one snapshot per event and keeps its
 Python process warm instead of spawning many clients for each redraw.
+
+## Animation settings
+
+Press **Super+A** to open **animation settings**. The same name appears in
+shortcuts (`Super+/`). The centered dialog follows the active theme and offers:
+
+- A master switch, VSync, fade controls and a **60 FPS default** frame ceiling.
+- Opening, closing and popup effects, enabled individually. FT-Labs exposes its
+  supported motion types and spring stiffness, mass, damping and clamping.
+  Modern Picom uses native presets and per-event durations.
+- Workspace and Kitty transitions with separate switches, styles and durations.
+- An unsaved opening preview, quick presets, defaults and undo of the last apply.
+
+Apply preflights a generated config, saves a backup and restarts only the
+compositor. Failure restores the previous preferences and compositor settings.
+Base Picom files retain their appearance and protected lock/transition rules.
+Preferences live in `~/.config/rice/animations.json`; backups are in
+`~/.local/state/rice/animation-backups/`. Portable defaults stay in code.
+
+The installed FT-Labs build has no native FPS ceiling. A small local C helper
+limits its libepoxy GLX/EGL presentation calls; it is compiled with `cc` in the
+user cache and loaded only into Picom. The same ceiling applies to desktop
+transition drawing. Turning the frame limit off restores uncapped presentation.
+This does not change monitor resolution or refresh, and FPS can be lower than
+the ceiling when rendering is slower. No system libraries are replaced.
+
+The compositor starts in its own session, so closing the settings applicator
+cannot stop it. The control center checks the actual X11 compositor selection
+before creating fullscreen transparent click backdrops. If composition is
+unavailable, it opens only the panel and keeps Escape available, avoiding an
+opaque black fullscreen window.
+
+Display recovery: if `~/.config/rice/compositor-safe-mode` exists, the launcher
+uses the base compatibility config directly, bypasses the FPS helper, and skips
+the motion overlay daemon. Applying animation settings is blocked while this
+marker exists. It is a private recovery choice, not distributed state. The
+2026-11-08 audit found it absent on the notebook, with FT-Labs running; the
+earlier black-screen cause remains unproved. Preserve any existing marker on
+the destination until its rendering issue has been investigated.

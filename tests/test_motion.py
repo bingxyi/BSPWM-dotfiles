@@ -16,6 +16,18 @@ import workspace_state
 import power_backend
 
 class MotionTests(unittest.TestCase):
+    def test_frame_ceiling_tracks_fractional_refresh_without_systematic_skips(self):
+        for refresh in (59.97,60,120,120.21,144):
+            gate=motion.FrameGate(60)
+            frames=sum(gate.ready(tick/refresh) for tick in range(round(refresh*10)))
+            self.assertAlmostEqual(frames/10,60,delta=.3,msg=str(refresh))
+
+    def test_frame_gate_recovers_after_idle_without_a_catchup_burst(self):
+        gate=motion.FrameGate(60)
+        self.assertTrue(gate.ready(0));self.assertFalse(gate.ready(.001))
+        self.assertTrue(gate.ready(10))
+        self.assertFalse(gate.ready(10.001))
+
     def test_easing_has_no_overshoot_and_finishes_at_target(self):
         values=[motion.easing(i/100) for i in range(101)]
         self.assertEqual(values[0],0);self.assertEqual(values[-1],1)

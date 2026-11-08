@@ -144,6 +144,7 @@ def action_catalog():
         ('control','Control center',base+'control.sh --toggle'),
         ('bluetooth','Bluetooth',base+'desktop_ui.py bluetooth'),
         ('calendar','Calendar / events',base+'desktop_ui.py events'),
+        ('animation-settings','animation settings',base+'desktop_ui.py animations'),
         ('media','Media center',base+'media.sh --toggle'),
         ('notifications','Notifications',base+'notifications.sh --toggle'),
         ('theme','Theme selector',base+'theme.sh --menu'),

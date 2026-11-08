@@ -3,6 +3,10 @@
 # Super+Shift moves windows. Super+/ opens this cheatsheet.
 
 ## system
+# animation settings
+super + a
+	~/.config/rice/bin/desktop_ui.py animations
+
 # Reload keyboard shortcuts
 super + Escape
 	~/.config/rice/bin/hotkeys.py --reload && notify-send -a archlinux "sxhkd" "Shortcuts reloaded"

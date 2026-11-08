@@ -119,6 +119,14 @@ class InstallerTests(unittest.TestCase):
     def deploy(self, **kwargs):
         installer.deploy(self.target, **kwargs)
 
+    def test_python_bytecode_is_not_part_of_the_distribution_payload(self):
+        generated=self.src.parent/'__pycache__'/'module.cpython-314.pyc'
+        generated.parent.mkdir();generated.write_bytes(b'generated')
+        (self.src.parent/'loose.pyc').write_bytes(b'generated')
+        result=installer.sources()
+        self.assertIn(self.rel,result)
+        self.assertFalse(any('__pycache__' in name or name.endswith('.pyc') for name in result))
+
     def test_regular_copy_backup_and_restore(self):
         path = self.target / self.rel
         path.parent.mkdir(parents=True)
@@ -261,8 +269,25 @@ class InstallerTests(unittest.TestCase):
                 installer.check_dependencies()
         self.assertEqual(list(self.target.iterdir()), [])
 
+    def test_missing_kitty_shell_is_reported_before_deployment(self):
+        which = shutil.which
+        with patch.object(installer.shutil, 'which', side_effect=lambda name: None if name == 'fish' else which(name)):
+            with self.assertRaisesRegex(RuntimeError, r'Missing session dependencies.*fish'):
+                installer.check_dependencies()
+        self.assertEqual(list(self.target.iterdir()), [])
+
 
 class RealCopyTest(unittest.TestCase):
+    def test_fish_default_is_installed_but_existing_config_is_preserved(self):
+        with tempfile.TemporaryDirectory(prefix='rice-fish-') as directory:
+            target = Path(directory)
+            path = target / '.config/fish/config.fish'
+            installer.deploy(target)
+            self.assertEqual(path.read_bytes(), (ROOT / 'defaults/.config/fish/config.fish').read_bytes())
+            path.write_text('# My existing shell config\nset -g fish_greeting hello\n')
+            installer.deploy(target)
+            self.assertEqual(path.read_text(), '# My existing shell config\nset -g fish_greeting hello\n')
+
     def test_full_deploy_and_restore_in_disposable_home(self):
         with tempfile.TemporaryDirectory(prefix='rice-real-copy-') as directory:
             target = Path(directory)
